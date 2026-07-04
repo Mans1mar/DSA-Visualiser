@@ -21,13 +21,15 @@ export function GraphVisualizationTab({
   playback,
   pseudocode,
   steps,
-  onRandomizeGraph,
+  onGraphChange,
+  resetKey,
 }: {
   graph: Graph;
   playback: Playback;
   pseudocode: string[];
   steps: Step[];
-  onRandomizeGraph: () => void;
+  onGraphChange: (graph: Graph) => void;
+  resetKey: string;
 }) {
   const {
     currentStep,
@@ -61,7 +63,9 @@ export function GraphVisualizationTab({
       <div className="flex flex-col gap-4">
         <GraphView graph={graph} step={currentStep} />
         <GraphStateLegend />
-        <GraphInputControls onRandomize={onRandomizeGraph} />
+        {/* Keyed by algorithm so it re-syncs to the new algorithm's
+            default graph instead of showing a stale edge list. */}
+        <GraphInputControls key={resetKey} initialValue={graph} onChange={onGraphChange} />
         <PlaybackControls
           isPlaying={isPlaying}
           isAtStart={isAtStart}

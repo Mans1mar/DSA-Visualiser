@@ -31,3 +31,21 @@ export function getNeighbors(graph: Graph, nodeId: string): Neighbor[] {
   }
   return neighbors.sort((a, b) => a.id.localeCompare(b.id));
 }
+
+/** BFS/DFS/Dijkstra all assume every node is reachable from the start
+ * node - used to reject disconnected custom graphs at input time rather
+ * than letting them silently under-visit. */
+export function isConnected(graph: Graph, startId: string): boolean {
+  const visited = new Set<string>([startId]);
+  const queue = [startId];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const neighbor of getNeighbors(graph, current)) {
+      if (!visited.has(neighbor.id)) {
+        visited.add(neighbor.id);
+        queue.push(neighbor.id);
+      }
+    }
+  }
+  return visited.size === graph.nodes.length;
+}

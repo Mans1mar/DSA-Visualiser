@@ -240,12 +240,26 @@ export function getAlgorithmsByCategory(category: Category): AlgorithmMeta[] {
   return getAllAlgorithms().filter((algorithm) => algorithm.category === category);
 }
 
-/** Runs an algorithm against its own sample input, dispatching on kind -
- * the one place that needs to know array vs graph run() signatures
- * differ, so callers (the single algorithm page, Comparison Mode) don't
- * each have to re-derive it. */
-export function runAlgorithm(algorithm: AlgorithmMeta): Step[] {
+/** Runs an algorithm against an explicit input (a custom/random array or
+ * graph, or the algorithm's own default), dispatching on kind - the one
+ * place that needs to know array vs graph run() signatures differ, so
+ * callers (the single algorithm page, Comparison Mode) don't each have
+ * to re-derive it. Graph runs always start from the first node in the
+ * given graph, falling back to the algorithm's declared start node only
+ * when using the algorithm's own default graph. */
+export function runAlgorithmWithInput(
+  algorithm: AlgorithmMeta,
+  input: number[] | Graph
+): Step[] {
   return algorithm.kind === "array"
-    ? algorithm.run(algorithm.sampleInput)
-    : algorithm.run(algorithm.graph, algorithm.startNode);
+    ? algorithm.run(input as number[])
+    : algorithm.run(input as Graph, (input as Graph).nodes[0]?.id ?? algorithm.startNode);
+}
+
+/** Runs an algorithm against its own sample input. */
+export function runAlgorithm(algorithm: AlgorithmMeta): Step[] {
+  return runAlgorithmWithInput(
+    algorithm,
+    algorithm.kind === "array" ? algorithm.sampleInput : algorithm.graph
+  );
 }

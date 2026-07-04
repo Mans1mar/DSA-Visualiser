@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayback } from "@/hooks/use-playback";
-import { getAlgorithm } from "@/lib/algorithms/catalog";
+import { getAlgorithm, runAlgorithmWithInput } from "@/lib/algorithms/catalog";
 import type { Language } from "@/lib/algorithms/languages";
-import { generateRandomGraph } from "@/lib/graph/random-graph";
+import type { Graph } from "@/lib/graph/types";
 import { CodeLanguageSwitcher } from "./code-language-switcher";
 import { ComplexityTab } from "./complexity-tab";
 import { GraphVisualizationTab } from "./graph-visualization-tab";
@@ -28,9 +28,7 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
   // algorithm's own default" - randomizing or entering a custom array
   // (or randomizing the graph) fills these in instead.
   const [customInput, setCustomInput] = useState<number[] | null>(null);
-  const [customGraph, setCustomGraph] = useState<
-    ReturnType<typeof generateRandomGraph> | null
-  >(null);
+  const [customGraph, setCustomGraph] = useState<Graph | null>(null);
 
   // Reset editable input whenever the algorithm itself changes (a new
   // slug) - render-time "reset state when a prop changes" pattern, so a
@@ -47,9 +45,7 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
   const activeGraph = algorithm.kind === "graph" ? (customGraph ?? algorithm.graph) : null;
 
   const steps = useMemo(() => {
-    return algorithm.kind === "array"
-      ? algorithm.run(activeArrayInput!)
-      : algorithm.run(activeGraph!, activeGraph!.nodes[0]?.id ?? algorithm.startNode);
+    return runAlgorithmWithInput(algorithm, algorithm.kind === "array" ? activeArrayInput! : activeGraph!);
   }, [algorithm, activeArrayInput, activeGraph]);
 
   const playback = usePlayback(steps);
@@ -85,7 +81,8 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             playback={playback}
             pseudocode={algorithm.pseudocode}
             steps={steps}
-            onRandomizeGraph={() => setCustomGraph(generateRandomGraph())}
+            onGraphChange={setCustomGraph}
+            resetKey={slug}
           />
         )}
       </TabsContent>

@@ -4,12 +4,17 @@ import { GraphStateLegend } from "@/components/visualizer/graph-state-legend";
 import { GraphView } from "@/components/visualizer/graph-view";
 import { StateLegend } from "@/components/visualizer/state-legend";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
+import type { Graph } from "@/lib/graph/types";
 import { computeRunningStats } from "@/lib/visualizer/comparison-stats";
 import type { Step } from "@/types/step";
 import { StatsPanel } from "./stats-panel";
 
 type ComparisonSideProps = {
   algorithm: AlgorithmMeta;
+  /** The graph actually run (custom/random or the algorithm's own
+   * default) - not derived from algorithm.graph, since that's always
+   * the catalog default and wouldn't reflect a shared custom graph. */
+  graph: Graph | null;
   steps: Step[];
   currentStep: Step;
   currentIndex: number;
@@ -24,6 +29,7 @@ type ComparisonSideProps = {
 
 export function ComparisonSide({
   algorithm,
+  graph,
   steps,
   currentStep,
   currentIndex,
@@ -43,7 +49,7 @@ export function ComparisonSide({
       {algorithm.kind === "array" ? (
         <ArrayBars step={currentStep} maxPointerRows={maxPointerRows} />
       ) : (
-        <GraphView graph={algorithm.graph} step={currentStep} />
+        <GraphView graph={graph!} step={currentStep} />
       )}
       {algorithm.kind === "array" ? <StateLegend /> : <GraphStateLegend />}
 

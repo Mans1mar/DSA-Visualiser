@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ArrayInputControls } from "@/components/algorithm-page/array-input-controls";
+import { GraphInputControls } from "@/components/algorithm-page/graph-input-controls";
 import { PlaybackControls } from "@/components/visualizer/playback-controls";
 import { useComparisonPlayback } from "@/hooks/use-comparison-playback";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
-import { getAlgorithm, getAllAlgorithms, runAlgorithm } from "@/lib/algorithms/catalog";
+import {
+  getAlgorithm,
+  getAllAlgorithms,
+  runAlgorithmWithInput,
+} from "@/lib/algorithms/catalog";
+import type { Graph } from "@/lib/graph/types";
 import { computeMaxPointerStack } from "@/lib/visualizer/layout-stability";
 import { AlgorithmSelect } from "./algorithm-select";
 import { ComparisonSide } from "./comparison-side";
@@ -19,8 +26,11 @@ const DEFAULT_SLUG_B = "quick-sort";
  * (cheap, sub-millisecond) computation just runs a second time there
  * purely to time it.
  */
-function useTimedRun(algorithm: AlgorithmMeta) {
-  const steps = useMemo(() => runAlgorithm(algorithm), [algorithm]);
+function useTimedRun(algorithm: AlgorithmMeta, input: number[] | Graph) {
+  const steps = useMemo(
+    () => runAlgorithmWithInput(algorithm, input),
+    [algorithm, input]
+  );
   const [computeTimeMs, setComputeTimeMs] = useState(0);
 
   useEffect(() => {
@@ -29,11 +39,11 @@ function useTimedRun(algorithm: AlgorithmMeta) {
     // "stop at the end" transition, and for the same lint reason.
     const id = window.setTimeout(() => {
       const start = performance.now();
-      runAlgorithm(algorithm);
+      runAlgorithmWithInput(algorithm, input);
       setComputeTimeMs(performance.now() - start);
     }, 0);
     return () => window.clearTimeout(id);
-  }, [algorithm]);
+  }, [algorithm, input]);
 
   return { steps, computeTimeMs };
 }
@@ -60,8 +70,33 @@ export function ComparisonPageClient() {
     : (optionsB[0]?.slug ?? slugB);
   const algorithmB = getAlgorithm(effectiveSlugB)!;
 
-  const { steps: stepsA, computeTimeMs: computeTimeMsA } = useTimedRun(algorithmA);
-  const { steps: stepsB, computeTimeMs: computeTimeMsB } = useTimedRun(algorithmB);
+  // Input is owned here, shared by both sides - the whole point of
+  // comparing two algorithms is seeing them run on the *same* data, not
+  // each on its own independent random input. Reset whenever A's kind
+  // flips (array <-> graph) so a stale array/graph doesn't linger for a
+  // kind it no longer applies to.
+  const [customArray, setCustomArray] = useState<number[] | null>(null);
+  const [customGraph, setCustomGraph] = useState<Graph | null>(null);
+  const [prevKind, setPrevKind] = useState(algorithmA.kind);
+  if (algorithmA.kind !== prevKind) {
+    setPrevKind(algorithmA.kind);
+    setCustomArray(null);
+    setCustomGraph(null);
+  }
+
+  const activeArrayInput =
+    algorithmA.kind === "array" ? (customArray ?? algorithmA.sampleInput) : null;
+  const activeGraph = algorithmA.kind === "graph" ? (customGraph ?? algorithmA.graph) : null;
+  const activeInput = algorithmA.kind === "array" ? activeArrayInput! : activeGraph!;
+
+  const { steps: stepsA, computeTimeMs: computeTimeMsA } = useTimedRun(
+    algorithmA,
+    activeInput
+  );
+  const { steps: stepsB, computeTimeMs: computeTimeMsB } = useTimedRun(
+    algorithmB,
+    activeInput
+  );
 
   const playback = useComparisonPlayback(stepsA, stepsB);
 
@@ -99,6 +134,15 @@ export function ComparisonPageClient() {
         />
       </div>
 
+      {/* One shared input control for both sides - conditionally array or
+          graph shaped based on the selected kind. Different component
+          types in this slot already remount cleanly on kind switches. */}
+      {algorithmA.kind === "array" ? (
+        <ArrayInputControls initialValue={activeArrayInput!} onChange={setCustomArray} />
+      ) : (
+        <GraphInputControls initialValue={activeGraph!} onChange={setCustomGraph} />
+      )}
+
       <PlaybackControls
         isPlaying={playback.isPlaying}
         isAtStart={playback.isAtStart}
@@ -115,6 +159,7 @@ export function ComparisonPageClient() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ComparisonSide
           algorithm={algorithmA}
+          graph={activeGraph}
           steps={stepsA}
           currentStep={playback.currentStepA}
           currentIndex={playback.indexA}
@@ -124,6 +169,7 @@ export function ComparisonPageClient() {
         />
         <ComparisonSide
           algorithm={algorithmB}
+          graph={activeGraph}
           steps={stepsB}
           currentStep={playback.currentStepB}
           currentIndex={playback.indexB}

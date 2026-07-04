@@ -1,9 +1,23 @@
-import type { Graph } from "./types";
+import type { Graph, GraphNode } from "./types";
 
 const NODE_LETTERS = "ABCDEFGH".split("");
 const CENTER_X = 300;
 const CENTER_Y = 190;
 const RADIUS = 160;
+
+/** Places node ids evenly around a circle - shared by random graph
+ * generation and custom graph parsing so a hand-typed edge list gets
+ * the same readable layout a random graph would. */
+export function circularLayout(ids: string[]): GraphNode[] {
+  return ids.map((id, i) => {
+    const angle = (2 * Math.PI * i) / ids.length - Math.PI / 2;
+    return {
+      id,
+      x: Math.round(CENTER_X + RADIUS * Math.cos(angle)),
+      y: Math.round(CENTER_Y + RADIUS * Math.sin(angle)),
+    };
+  });
+}
 
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
@@ -32,14 +46,7 @@ export function generateRandomGraph(): Graph {
   const nodeCount = 5 + Math.floor(Math.random() * 4); // 5-8 nodes
   const ids = NODE_LETTERS.slice(0, nodeCount);
 
-  const nodes = ids.map((id, i) => {
-    const angle = (2 * Math.PI * i) / nodeCount - Math.PI / 2;
-    return {
-      id,
-      x: Math.round(CENTER_X + RADIUS * Math.cos(angle)),
-      y: Math.round(CENTER_Y + RADIUS * Math.sin(angle)),
-    };
-  });
+  const nodes = circularLayout(ids);
 
   const shuffled = shuffle(ids);
   const edges: Graph["edges"] = [];
