@@ -127,4 +127,18 @@
     background: #f9e2dc;
     color: #a24c37;
   }
+
+  /* array visualizer bar states: default / comparing / swapping */
+  .bar-default {
+    background-color: color-mix(in oklab, var(--chart-1) 18%, transparent);
+    border-color: var(--chart-1);
+  }
+  .bar-comparing {
+    background-color: color-mix(in oklab, var(--chart-4) 25%, transparent);
+    border-color: var(--chart-4);
+  }
+  .bar-swapping {
+    background-color: color-mix(in oklab, var(--chart-2) 25%, transparent);
+    border-color: var(--chart-2);
+  }
 }
