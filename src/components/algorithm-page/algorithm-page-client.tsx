@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayback } from "@/hooks/use-playback";
 import { getAlgorithm, runAlgorithm } from "@/lib/algorithms/catalog";
-import { CodeTab } from "./code-tab";
+import type { Language } from "@/lib/algorithms/languages";
+import { CodeLanguageSwitcher } from "./code-language-switcher";
 import { ComplexityTab } from "./complexity-tab";
 import { GraphVisualizationTab } from "./graph-visualization-tab";
 import { OverviewTab } from "./overview-tab";
@@ -22,6 +23,11 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
   const algorithm = getAlgorithm(slug)!;
   const steps = useMemo(() => runAlgorithm(algorithm), [algorithm]);
   const playback = usePlayback(steps);
+  // Lifted up (rather than local to CodeLanguageSwitcher) so the choice
+  // survives navigating away to another tab and back - Radix unmounts
+  // inactive TabsContent, which would otherwise reset it to the default
+  // every time, same reason `playback` itself lives up here.
+  const [language, setLanguage] = useState<Language>("java");
 
   return (
     <Tabs defaultValue="overview" className="gap-6">
@@ -53,7 +59,12 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
         )}
       </TabsContent>
       <TabsContent value="code">
-        <CodeTab source={algorithm.source} currentLine={playback.currentStep.lineOfCode} />
+        <CodeLanguageSwitcher
+          sources={algorithm.sources}
+          currentLine={playback.currentStep.lineOfCode}
+          language={language}
+          onLanguageChange={setLanguage}
+        />
       </TabsContent>
       <TabsContent value="complexity">
         <ComplexityTab algorithm={algorithm} />

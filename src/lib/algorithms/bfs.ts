@@ -1,23 +1,59 @@
 import type { Step } from "@/types/step";
 import type { Graph } from "@/lib/graph/types";
 import { getNeighbors } from "@/lib/graph/types";
+import type { LanguageSources } from "./languages";
 import { GraphStepRecorder } from "./graph-step-recorder";
 
-export const BFS_SOURCE = [
-  "function bfs(graph, start) {",
-  "  const visited = new Set([start]);",
-  "  const queue = [start];",
-  "  while (queue.length > 0) {",
-  "    const node = queue.shift();",
-  "    for (const neighbor of neighbors(node)) {",
-  "      if (!visited.has(neighbor)) {",
-  "        visited.add(neighbor);",
-  "        queue.push(neighbor);",
-  "      }",
-  "    }",
-  "  }",
-  "}",
-];
+// Line-for-line across all three languages (and BFS_PSEUDOCODE below) -
+// every lineOfCode the algorithm emits refers to the same line number in
+// all of them, so switching languages never breaks highlighting.
+export const BFS_SOURCES: LanguageSources = {
+  java: [
+    "void bfs(Graph graph, String start) {",
+    "  Set<String> visited = new HashSet<>(List.of(start));",
+    "  Deque<String> queue = new ArrayDeque<>(List.of(start));",
+    "  while (!queue.isEmpty()) {",
+    "    String node = queue.poll();",
+    "    for (String neighbor : neighbors(node)) {",
+    "      if (!visited.contains(neighbor)) {",
+    "        visited.add(neighbor);",
+    "        queue.offer(neighbor);",
+    "      }",
+    "    }",
+    "  }",
+    "}",
+  ],
+  cpp: [
+    "void bfs(Graph& graph, string start) {",
+    "  unordered_set<string> visited = {start};",
+    "  queue<string> q; q.push(start);",
+    "  while (!q.empty()) {",
+    "    string node = q.front(); q.pop();",
+    "    for (string& neighbor : neighbors(node)) {",
+    "      if (!visited.count(neighbor)) {",
+    "        visited.insert(neighbor);",
+    "        q.push(neighbor);",
+    "      }",
+    "    }",
+    "  }",
+    "}",
+  ],
+  python: [
+    "def bfs(graph, start):",
+    "    visited = {start}",
+    "    queue = deque([start])",
+    "    while queue:",
+    "        node = queue.popleft()",
+    "        for neighbor in neighbors(node):",
+    "            if neighbor not in visited:",
+    "                visited.add(neighbor)",
+    "                queue.append(neighbor)",
+    "            # end if",
+    "        # end for",
+    "    # end while",
+    "    # end bfs",
+  ],
+};
 
 // Line-for-line pseudocode counterpart to BFS_SOURCE.
 export const BFS_PSEUDOCODE = [

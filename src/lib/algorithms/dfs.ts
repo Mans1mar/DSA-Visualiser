@@ -1,18 +1,44 @@
 import type { Step } from "@/types/step";
 import type { Graph } from "@/lib/graph/types";
 import { getNeighbors } from "@/lib/graph/types";
+import type { LanguageSources } from "./languages";
 import { GraphStepRecorder } from "./graph-step-recorder";
 
-export const DFS_SOURCE = [
-  "function dfs(graph, node, visited) {",
-  "  visited.add(node);",
-  "  for (const neighbor of neighbors(node)) {",
-  "    if (!visited.has(neighbor)) {",
-  "      dfs(graph, neighbor, visited);",
-  "    }",
-  "  }",
-  "}",
-];
+// Line-for-line across all three languages (and DFS_PSEUDOCODE below) -
+// every lineOfCode the algorithm emits refers to the same line number in
+// all of them, so switching languages never breaks highlighting.
+export const DFS_SOURCES: LanguageSources = {
+  java: [
+    "void dfs(Graph graph, String node, Set<String> visited) {",
+    "  visited.add(node);",
+    "  for (String neighbor : neighbors(node)) {",
+    "    if (!visited.contains(neighbor)) {",
+    "      dfs(graph, neighbor, visited);",
+    "    }",
+    "  }",
+    "}",
+  ],
+  cpp: [
+    "void dfs(Graph& graph, string node, unordered_set<string>& visited) {",
+    "  visited.insert(node);",
+    "  for (string& neighbor : neighbors(node)) {",
+    "    if (!visited.count(neighbor)) {",
+    "      dfs(graph, neighbor, visited);",
+    "    }",
+    "  }",
+    "}",
+  ],
+  python: [
+    "def dfs(graph, node, visited):",
+    "    visited.add(node)",
+    "    for neighbor in neighbors(node):",
+    "        if neighbor not in visited:",
+    "            dfs(graph, neighbor, visited)",
+    "        # end if",
+    "    # end for",
+    "    # end dfs",
+  ],
+};
 
 // Line-for-line pseudocode counterpart to DFS_SOURCE.
 export const DFS_PSEUDOCODE = [
