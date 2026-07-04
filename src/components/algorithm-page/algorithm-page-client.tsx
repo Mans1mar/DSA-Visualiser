@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayback } from "@/hooks/use-playback";
-import { getAlgorithm, runAlgorithm } from "@/lib/algorithms/catalog";
+import { getAlgorithm } from "@/lib/algorithms/catalog";
 import type { Language } from "@/lib/algorithms/languages";
+import { generateRandomGraph } from "@/lib/graph/random-graph";
 import { CodeLanguageSwitcher } from "./code-language-switcher";
 import { ComplexityTab } from "./complexity-tab";
 import { GraphVisualizationTab } from "./graph-visualization-tab";
@@ -21,17 +22,43 @@ import { VisualizationTab } from "./visualization-tab";
  */
 export function AlgorithmPageClient({ slug }: { slug: string }) {
   const algorithm = getAlgorithm(slug)!;
-  const steps = useMemo(() => runAlgorithm(algorithm), [algorithm]);
-  const playback = usePlayback(steps);
-  // Lifted up (rather than local to CodeLanguageSwitcher) so the choice
-  // survives navigating away to another tab and back - Radix unmounts
-  // inactive TabsContent, which would otherwise reset it to the default
-  // every time, same reason `playback` itself lives up here.
   const [language, setLanguage] = useState<Language>("java");
+
+  // User-editable input, separate per kind. null means "use the
+  // algorithm's own default" - randomizing or entering a custom array
+  // (or randomizing the graph) fills these in instead.
+  const [customInput, setCustomInput] = useState<number[] | null>(null);
+  const [customGraph, setCustomGraph] = useState<
+    ReturnType<typeof generateRandomGraph> | null
+  >(null);
+
+  // Reset editable input whenever the algorithm itself changes (a new
+  // slug) - render-time "reset state when a prop changes" pattern, so a
+  // custom array/graph never carries over to a different algorithm.
+  const [prevAlgorithm, setPrevAlgorithm] = useState(algorithm);
+  if (algorithm !== prevAlgorithm) {
+    setPrevAlgorithm(algorithm);
+    setCustomInput(null);
+    setCustomGraph(null);
+  }
+
+  const activeArrayInput =
+    algorithm.kind === "array" ? (customInput ?? algorithm.sampleInput) : null;
+  const activeGraph = algorithm.kind === "graph" ? (customGraph ?? algorithm.graph) : null;
+
+  const steps = useMemo(() => {
+    return algorithm.kind === "array"
+      ? algorithm.run(activeArrayInput!)
+      : algorithm.run(activeGraph!, activeGraph!.nodes[0]?.id ?? algorithm.startNode);
+  }, [algorithm, activeArrayInput, activeGraph]);
+
+  const playback = usePlayback(steps);
 
   return (
     <Tabs defaultValue="overview" className="gap-6">
-      <TabsList>
+      {/* max-w-full + overflow-x-auto: on a narrow viewport the tab bar
+          scrolls within itself instead of forcing the whole page wider. */}
+      <TabsList className="max-w-full overflow-x-auto">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="visualization">Visualization</TabsTrigger>
         <TabsTrigger value="code">Code</TabsTrigger>
@@ -48,13 +75,17 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             playback={playback}
             pseudocode={algorithm.pseudocode}
             steps={steps}
+            arrayInput={activeArrayInput!}
+            onArrayInputChange={setCustomInput}
+            resetKey={slug}
           />
         ) : (
           <GraphVisualizationTab
-            graph={algorithm.graph}
+            graph={activeGraph!}
             playback={playback}
             pseudocode={algorithm.pseudocode}
             steps={steps}
+            onRandomizeGraph={() => setCustomGraph(generateRandomGraph())}
           />
         )}
       </TabsContent>

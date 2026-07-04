@@ -10,6 +10,17 @@ export function usePlayback(steps: Step[]) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
 
+  // Reset playback whenever the steps identity changes (random/custom
+  // input regenerated the run) - the "adjust state during render when a
+  // prop changes" pattern, same as useComparisonPlayback, so a stale
+  // index from the old run is never rendered against the new one.
+  const [prevSteps, setPrevSteps] = useState(steps);
+  if (steps !== prevSteps) {
+    setPrevSteps(steps);
+    setCurrentIndex(0);
+    setIsPlaying(false);
+  }
+
   const lastIndex = steps.length - 1;
   const isAtStart = currentIndex === 0;
   const isAtEnd = currentIndex >= lastIndex;

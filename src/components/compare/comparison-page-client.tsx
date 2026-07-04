@@ -111,7 +111,8 @@ export function ComparisonPageClient() {
         onSpeedChange={playback.setSpeed}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* grid-cols-1 matters even below lg - see visualization-tab.tsx */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ComparisonSide
           algorithm={algorithmA}
           steps={stepsA}

@@ -12,6 +12,7 @@ import {
 } from "@/lib/visualizer/layout-stability";
 import type { Step } from "@/types/step";
 import { CodeTab } from "./code-tab";
+import { GraphInputControls } from "./graph-input-controls";
 
 type Playback = ReturnType<typeof usePlayback>;
 
@@ -20,11 +21,13 @@ export function GraphVisualizationTab({
   playback,
   pseudocode,
   steps,
+  onRandomizeGraph,
 }: {
   graph: Graph;
   playback: Playback;
   pseudocode: string[];
   steps: Step[];
+  onRandomizeGraph: () => void;
 }) {
   const {
     currentStep,
@@ -53,10 +56,12 @@ export function GraphVisualizationTab({
     // reset never require scrolling away from what's on screen. The
     // pseudocode column carries the explanation and auxiliary panels
     // right underneath it, rather than a separate full-width row.
-    <div className="grid items-start gap-6 lg:grid-cols-2">
+    // grid-cols-1 matters even below lg - see visualization-tab.tsx for why.
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
         <GraphView graph={graph} step={currentStep} />
         <GraphStateLegend />
+        <GraphInputControls onRandomize={onRandomizeGraph} />
         <PlaybackControls
           isPlaying={isPlaying}
           isAtStart={isAtStart}

@@ -9,6 +9,7 @@ import {
   computeMaxPointerStack,
 } from "@/lib/visualizer/layout-stability";
 import type { Step } from "@/types/step";
+import { ArrayInputControls } from "./array-input-controls";
 import { CodeTab } from "./code-tab";
 
 type Playback = ReturnType<typeof usePlayback>;
@@ -17,10 +18,16 @@ export function VisualizationTab({
   playback,
   pseudocode,
   steps,
+  arrayInput,
+  onArrayInputChange,
+  resetKey,
 }: {
   playback: Playback;
   pseudocode: string[];
   steps: Step[];
+  arrayInput: number[];
+  onArrayInputChange: (values: number[]) => void;
+  resetKey: string;
 }) {
   const {
     currentStep,
@@ -49,10 +56,24 @@ export function VisualizationTab({
     // reset never require scrolling away from what's on screen. The
     // pseudocode column carries the explanation and auxiliary panels
     // right underneath it, rather than a separate full-width row.
-    <div className="grid items-start gap-6 lg:grid-cols-2">
+    // grid-cols-1 (not just lg:grid-cols-2) matters here even though it's
+    // the layout's only column below lg - Tailwind's numbered grid-cols
+    // utilities set minmax(0, 1fr), which lets a child's own
+    // overflow-x-auto (the code panel's long lines) actually engage.
+    // Without it the browser's default single-column `auto` track sizes
+    // to fit that content unwrapped, and the whole page overflows instead.
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
         <ArrayBars step={currentStep} maxPointerRows={maxPointerRows} />
         <StateLegend />
+        {/* Keyed by algorithm so its text field resets to the new
+            algorithm's default array instead of showing a stale value -
+            "Randomize"/"Set array" already keep it in sync themselves. */}
+        <ArrayInputControls
+          key={resetKey}
+          initialValue={arrayInput}
+          onChange={onArrayInputChange}
+        />
         <PlaybackControls
           isPlaying={isPlaying}
           isAtStart={isAtStart}
