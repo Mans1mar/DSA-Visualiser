@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+  DSA Visualizer is light-only by design (see palette review). Gating
+  `dark:` on a `.dark` class - one we never apply anywhere - means it
+  stays inert even if the OS/browser prefers dark mode, instead of the
+  Tailwind default of following `prefers-color-scheme`.
+*/
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #faf9f6;
+  --foreground: #3b3a45;
+
+  --card: #ffffff;
+  --card-foreground: #3b3a45;
+  --popover: #ffffff;
+  --popover-foreground: #3b3a45;
+
+  --primary: #7fa6d9;
+  --primary-foreground: #ffffff;
+
+  --secondary: #efeaf8;
+  --secondary-foreground: #5c4b83;
+
+  --muted: #f4f2ee;
+  --muted-foreground: #84829a;
+
+  --accent: #e2f5ec;
+  --accent-foreground: #2f6b54;
+
+  --destructive: #e08a76;
+  --destructive-foreground: #ffffff;
+
+  --border: #eae7f2;
+  --input: #eae7f2;
+  --ring: #7fa6d9;
+
+  /* comparison-mode series colors, in preferred order */
+  --chart-1: #7fa6d9;
+  --chart-2: #e08a76;
+  --chart-3: #6cc7a3;
+  --chart-4: #e0b164;
+  --chart-5: #a992d6;
+
+  --radius: 0.625rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #3b3a45;
+  --sidebar-primary: #7fa6d9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #efeaf8;
+  --sidebar-accent-foreground: #5c4b83;
+  --sidebar-border: #eae7f2;
+  --sidebar-ring: #7fa6d9;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* semantic difficulty badges, used on algorithm cards */
+@layer utilities {
+  .badge-easy {
+    background: #e2f5ec;
+    color: #2f6b54;
+  }
+  .badge-medium {
+    background: #fbefda;
+    color: #8a5a1e;
+  }
+  .badge-hard {
+    background: #f9e2dc;
+    color: #a24c37;
+  }
+}
