@@ -1,12 +1,18 @@
+const CHIP_CLASS = "rounded-md bg-card px-2.5 py-1 font-mono text-xs shadow-sm";
+
 type LinearStatePanelProps = {
   label: string;
   items: unknown[];
+  /** Longest this list ever gets across the whole run (computed by the
+   * caller via computeMaxLinearItems), so the panel reserves that many
+   * chip slots up front instead of growing/shrinking step to step. */
+  maxItems: number;
 };
 
 /** Generic chip-row renderer for queue/stack/priority-queue arrays -
  * whichever one an algorithm populates in dataStructureState. */
-export function LinearStatePanel({ label, items }: LinearStatePanelProps) {
-  if (items.length === 0) return null;
+export function LinearStatePanel({ label, items, maxItems }: LinearStatePanelProps) {
+  if (maxItems === 0) return null;
 
   return (
     <div className="flex flex-col gap-2">
@@ -14,14 +20,18 @@ export function LinearStatePanel({ label, items }: LinearStatePanelProps) {
         {label}
       </h3>
       <div className="flex flex-wrap gap-2">
-        {items.map((item, i) => (
-          <span
-            key={i}
-            className="rounded-md bg-card px-2.5 py-1 font-mono text-xs shadow-sm"
-          >
-            {String(item)}
-          </span>
-        ))}
+        {Array.from({ length: maxItems }, (_, i) => {
+          const item = items[i];
+          return item !== undefined ? (
+            <span key={i} className={CHIP_CLASS}>
+              {String(item)}
+            </span>
+          ) : (
+            <span key={i} className={`${CHIP_CLASS} invisible`} aria-hidden="true">
+              -
+            </span>
+          );
+        })}
       </div>
     </div>
   );

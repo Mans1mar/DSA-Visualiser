@@ -3,6 +3,11 @@ import type { Step } from "@/types/step";
 
 type ArrayBarsProps = {
   step: Step;
+  /** Reserves height for this many stacked pointer tags on every index,
+   * even when the current step needs fewer (or none) - computed once by
+   * the caller from the whole run via computeMaxPointerStack, so the
+   * pointer row's height never changes step to step. */
+  maxPointerRows: number;
 };
 
 type Cell = { kind: "bar"; index: number } | { kind: "divider"; index: number };
@@ -34,7 +39,7 @@ function pointersByIndex(pointers: Record<string, number> | undefined, length: n
   return map;
 }
 
-export function ArrayBars({ step }: ArrayBarsProps) {
+export function ArrayBars({ step, maxPointerRows }: ArrayBarsProps) {
   const array = step.dataStructureState?.array ?? [];
   const sortedIndices = step.dataStructureState?.sortedIndices;
   const max = Math.max(1, ...array);
@@ -86,7 +91,7 @@ export function ArrayBars({ step }: ArrayBarsProps) {
         })}
       </div>
 
-      {pointed.size > 0 && (
+      {maxPointerRows > 0 && (
         <div className="flex gap-2 px-4">
           {cells.map((cell) =>
             cell.kind === "divider" ? (
@@ -96,11 +101,18 @@ export function ArrayBars({ step }: ArrayBarsProps) {
                 key={`label-${cell.index}`}
                 className="flex flex-1 flex-col items-center gap-1"
               >
-                {(pointed.get(cell.index) ?? []).map((name) => (
-                  <span key={name} className="pointer-tag">
-                    {name}
-                  </span>
-                ))}
+                {Array.from({ length: maxPointerRows }, (_, slot) => {
+                  const name = (pointed.get(cell.index) ?? [])[slot];
+                  return name ? (
+                    <span key={slot} className="pointer-tag">
+                      {name}
+                    </span>
+                  ) : (
+                    <span key={slot} className="pointer-tag invisible" aria-hidden="true">
+                      -
+                    </span>
+                  );
+                })}
               </div>
             )
           )}

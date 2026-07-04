@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { CallStackPanel } from "@/components/visualizer/call-stack-panel";
 import { GraphStateLegend } from "@/components/visualizer/graph-state-legend";
 import { GraphView } from "@/components/visualizer/graph-view";
@@ -5,6 +6,11 @@ import { LinearStatePanel } from "@/components/visualizer/linear-state-panel";
 import { PlaybackControls } from "@/components/visualizer/playback-controls";
 import type { usePlayback } from "@/hooks/use-playback";
 import type { Graph } from "@/lib/graph/types";
+import {
+  computeMaxCallStackDepth,
+  computeMaxLinearItems,
+} from "@/lib/visualizer/layout-stability";
+import type { Step } from "@/types/step";
 import { CodeTab } from "./code-tab";
 
 type Playback = ReturnType<typeof usePlayback>;
@@ -13,10 +19,12 @@ export function GraphVisualizationTab({
   graph,
   playback,
   pseudocode,
+  steps,
 }: {
   graph: Graph;
   playback: Playback;
   pseudocode: string[];
+  steps: Step[];
 }) {
   const {
     currentStep,
@@ -32,6 +40,13 @@ export function GraphVisualizationTab({
     prev,
     reset,
   } = playback;
+
+  const maxCallStackDepth = useMemo(() => computeMaxCallStackDepth(steps), [steps]);
+  const maxQueueItems = useMemo(() => computeMaxLinearItems(steps, "queue"), [steps]);
+  const maxPQItems = useMemo(
+    () => computeMaxLinearItems(steps, "priorityQueue"),
+    [steps]
+  );
 
   return (
     // Visual + controls stay adjacent in their own column so play/step/
@@ -61,7 +76,12 @@ export function GraphVisualizationTab({
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm text-foreground">{currentStep.description}</p>
+          {/* Fixed height (not min-height) reserved for 3 lines - a floor
+              alone still lets the "Step" line below shift by however much
+              a longer/shorter description wraps differently step to step. */}
+          <p className="h-[60px] text-sm leading-5 text-foreground">
+            {currentStep.description}
+          </p>
           <p className="text-xs text-muted-foreground">
             Step {currentIndex + 1} of {totalSteps} · line {currentStep.lineOfCode}
           </p>
@@ -70,12 +90,20 @@ export function GraphVisualizationTab({
         {/* Only whichever of these an algorithm actually populates renders -
             BFS shows Queue, Dijkstra shows Priority queue, DFS shows the
             call stack via its recursion. */}
-        <LinearStatePanel label="Queue" items={currentStep.dataStructureState?.queue ?? []} />
+        <LinearStatePanel
+          label="Queue"
+          items={currentStep.dataStructureState?.queue ?? []}
+          maxItems={maxQueueItems}
+        />
         <LinearStatePanel
           label="Priority queue"
           items={currentStep.dataStructureState?.priorityQueue ?? []}
+          maxItems={maxPQItems}
         />
-        <CallStackPanel callStack={currentStep.dataStructureState?.callStack ?? []} />
+        <CallStackPanel
+          callStack={currentStep.dataStructureState?.callStack ?? []}
+          maxDepth={maxCallStackDepth}
+        />
       </div>
     </div>
   );
