@@ -1,7 +1,15 @@
 import { notFound } from "next/navigation";
 import { AlgorithmHeader } from "@/components/algorithm-page/algorithm-header";
 import { AlgorithmPageClient } from "@/components/algorithm-page/algorithm-page-client";
-import { getAlgorithm } from "@/lib/algorithms/catalog";
+import { getAlgorithm, getAllAlgorithms } from "@/lib/algorithms/catalog";
+
+/** Required for `output: "export"` (static GitHub Pages build) - every
+ * dynamic route must be enumerable at build time. Pulls from the same
+ * catalog the homepage cards use, so a new algorithm only ever needs
+ * adding in one place. */
+export function generateStaticParams() {
+  return getAllAlgorithms().map((algorithm) => ({ slug: algorithm.slug }));
+}
 
 export default async function AlgorithmPage(
   props: PageProps<"/algorithms/[slug]">
