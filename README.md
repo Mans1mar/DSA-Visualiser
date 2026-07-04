@@ -18,6 +18,9 @@ Right now the algorithms covered are:
 
 - Merge Sort
 - Quick Sort
+- Bubble Sort
+- Insertion Sort
+- Selection Sort
 - BFS
 - DFS
 - Dijkstra's Algorithm
