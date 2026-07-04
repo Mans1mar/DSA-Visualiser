@@ -5,6 +5,7 @@ import { PlaybackControls } from "@/components/visualizer/playback-controls";
 import { useComparisonPlayback } from "@/hooks/use-comparison-playback";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
 import { getAlgorithm, getAllAlgorithms, runAlgorithm } from "@/lib/algorithms/catalog";
+import { computeMaxPointerStack } from "@/lib/visualizer/layout-stability";
 import { AlgorithmSelect } from "./algorithm-select";
 import { ComparisonSide } from "./comparison-side";
 
@@ -64,6 +65,22 @@ export function ComparisonPageClient() {
 
   const playback = useComparisonPlayback(stepsA, stepsB);
 
+  // Shared by both sides rather than computed per side - otherwise two
+  // array algorithms with different worst-case pointer stacking (e.g.
+  // Merge Sort's i/j/k vs Quick Sort's lo/hi/pivot) would reserve
+  // different pointer-row heights and everything below the bars
+  // (legend, description, stats) would land at different Y coordinates
+  // between the two columns.
+  const maxPointerRows = useMemo(() => {
+    const arrayLengthA = stepsA[0]?.dataStructureState?.array?.length ?? 0;
+    const arrayLengthB = stepsB[0]?.dataStructureState?.array?.length ?? 0;
+    const a =
+      algorithmA.kind === "array" ? computeMaxPointerStack(stepsA, arrayLengthA) : 0;
+    const b =
+      algorithmB.kind === "array" ? computeMaxPointerStack(stepsB, arrayLengthB) : 0;
+    return Math.max(a, b);
+  }, [algorithmA.kind, algorithmB.kind, stepsA, stepsB]);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
@@ -102,6 +119,7 @@ export function ComparisonPageClient() {
           currentIndex={playback.indexA}
           totalSteps={stepsA.length}
           computeTimeMs={computeTimeMsA}
+          maxPointerRows={maxPointerRows}
         />
         <ComparisonSide
           algorithm={algorithmB}
@@ -110,6 +128,7 @@ export function ComparisonPageClient() {
           currentIndex={playback.indexB}
           totalSteps={stepsB.length}
           computeTimeMs={computeTimeMsB}
+          maxPointerRows={maxPointerRows}
         />
       </div>
     </div>

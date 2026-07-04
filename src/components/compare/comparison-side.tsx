@@ -4,7 +4,6 @@ import { GraphStateLegend } from "@/components/visualizer/graph-state-legend";
 import { GraphView } from "@/components/visualizer/graph-view";
 import { StateLegend } from "@/components/visualizer/state-legend";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
-import { computeMaxPointerStack } from "@/lib/visualizer/layout-stability";
 import { computeRunningStats } from "@/lib/visualizer/comparison-stats";
 import type { Step } from "@/types/step";
 import { StatsPanel } from "./stats-panel";
@@ -16,6 +15,11 @@ type ComparisonSideProps = {
   currentIndex: number;
   totalSteps: number;
   computeTimeMs: number;
+  /** Shared across both sides by the caller (max of each side's own
+   * need), not computed per side - otherwise Merge Sort and Quick Sort
+   * would each reserve a different amount of pointer-row space and
+   * everything below the bars would end up at different heights. */
+  maxPointerRows: number;
 };
 
 export function ComparisonSide({
@@ -25,12 +29,8 @@ export function ComparisonSide({
   currentIndex,
   totalSteps,
   computeTimeMs,
+  maxPointerRows,
 }: ComparisonSideProps) {
-  const arrayLength = steps[0]?.dataStructureState?.array?.length ?? 0;
-  const maxPointerRows = useMemo(
-    () => (algorithm.kind === "array" ? computeMaxPointerStack(steps, arrayLength) : 0),
-    [algorithm.kind, steps, arrayLength]
-  );
   const stats = useMemo(
     () => computeRunningStats(steps, currentIndex),
     [steps, currentIndex]
