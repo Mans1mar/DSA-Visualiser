@@ -164,4 +164,34 @@
     background-color: color-mix(in oklab, var(--chart-1) 14%, transparent);
     box-shadow: inset 2px 0 0 var(--chart-1);
   }
+
+  /* graph node states: default / frontier (discovered) / current / visited.
+     Same 4-color language as the array bars: chart-1 untouched, chart-4
+     under consideration, chart-2 actively processing, chart-3 settled. */
+  .node-default {
+    fill: color-mix(in oklab, var(--chart-1) 16%, white);
+    stroke: var(--chart-1);
+  }
+  .node-frontier {
+    fill: color-mix(in oklab, var(--chart-4) 25%, white);
+    stroke: var(--chart-4);
+  }
+  .node-current {
+    fill: color-mix(in oklab, var(--chart-2) 30%, white);
+    stroke: var(--chart-2);
+  }
+  .node-visited {
+    fill: color-mix(in oklab, var(--chart-3) 25%, white);
+    stroke: var(--chart-3);
+  }
+
+  .edge-default {
+    stroke: var(--border);
+  }
+  .edge-current {
+    stroke: var(--chart-2);
+  }
+  .edge-tree {
+    stroke: var(--chart-3);
+  }
 }

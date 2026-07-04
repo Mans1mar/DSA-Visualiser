@@ -1,5 +1,10 @@
 import { MERGE_SORT_SOURCE, mergeSort } from "./merge-sort";
 import { QUICK_SORT_SOURCE, quickSort } from "./quick-sort";
+import { BFS_SOURCE, bfs } from "./bfs";
+import { DFS_SOURCE, dfs } from "./dfs";
+import { DIJKSTRA_SOURCE, dijkstra } from "./dijkstra";
+import { SAMPLE_GRAPH, SAMPLE_GRAPH_START } from "@/lib/graph/sample-graph";
+import type { Graph } from "@/lib/graph/types";
 import type { Step } from "@/types/step";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -11,7 +16,7 @@ export type ComplexityRow = {
   worst: string;
 };
 
-export type AlgorithmMeta = {
+type BaseAlgorithmMeta = {
   slug: string;
   name: string;
   category: Category;
@@ -27,14 +32,28 @@ export type AlgorithmMeta = {
   };
   complexityComparison: string;
   source: string[];
+};
+
+export type ArrayAlgorithmMeta = BaseAlgorithmMeta & {
+  kind: "array";
   sampleInput: number[];
   run: (input: number[]) => Step[];
 };
+
+export type GraphAlgorithmMeta = BaseAlgorithmMeta & {
+  kind: "graph";
+  graph: Graph;
+  startNode: string;
+  run: (graph: Graph, start: string) => Step[];
+};
+
+export type AlgorithmMeta = ArrayAlgorithmMeta | GraphAlgorithmMeta;
 
 const SAMPLE_INPUT = [8, 3, 5, 4, 7, 6, 1, 2];
 
 export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
   "merge-sort": {
+    kind: "array",
     slug: "merge-sort",
     name: "Merge Sort",
     category: "Sorting",
@@ -65,6 +84,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     run: mergeSort,
   },
   "quick-sort": {
+    kind: "array",
     slug: "quick-sort",
     name: "Quick Sort",
     category: "Sorting",
@@ -93,15 +113,111 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     sampleInput: SAMPLE_INPUT,
     run: quickSort,
   },
+  bfs: {
+    kind: "graph",
+    slug: "bfs",
+    name: "Breadth-First Search",
+    category: "Graph",
+    difficulty: "Easy",
+    shortDescription: "Explores a graph level by level using a queue.",
+    timeComplexity: { best: "O(V + E)", average: "O(V + E)", worst: "O(V + E)" },
+    spaceComplexity: "O(V)",
+    overview: {
+      whatItDoes:
+        "Breadth-First Search explores a graph outward from a start node one layer at a time, using a queue so every neighbor at the current distance gets visited before moving further away.",
+      whenToUse:
+        "When you need the shortest path in an unweighted graph, or need to explore nodes in order of distance from the start - for example, the fewest hops between two people in a social network, or solving a maze.",
+      pros: [
+        "Guarantees the shortest path (fewest edges) in an unweighted graph",
+        "Simple to reason about - explores strictly in order of distance from the start",
+        "Never revisits a node, so it always terminates on finite graphs",
+      ],
+      cons: [
+        "Uses O(V) memory for the queue and visited set, significant on wide graphs",
+        "Ignores edge weights - fewest hops isn't necessarily the lowest-weight path",
+      ],
+    },
+    complexityComparison:
+      "DFS explores the same graph in the same O(V + E) time but trades BFS's shortest-path guarantee for lower typical memory use, since it only needs to remember one path at a time via the call stack. Dijkstra generalizes BFS to weighted graphs at the cost of a priority queue.",
+    source: BFS_SOURCE,
+    graph: SAMPLE_GRAPH,
+    startNode: SAMPLE_GRAPH_START,
+    run: bfs,
+  },
+  dfs: {
+    kind: "graph",
+    slug: "dfs",
+    name: "Depth-First Search",
+    category: "Graph",
+    difficulty: "Easy",
+    shortDescription: "Explores as far as possible along each branch before backtracking.",
+    timeComplexity: { best: "O(V + E)", average: "O(V + E)", worst: "O(V + E)" },
+    spaceComplexity: "O(V)",
+    overview: {
+      whatItDoes:
+        "Depth-First Search dives down one path as far as it can go before backtracking, using recursion (or an explicit stack) to remember where to return to.",
+      whenToUse:
+        "When you need to explore every reachable node and don't care about shortest paths - for example, detecting cycles, topological sorting, or checking whether a graph is connected.",
+      pros: [
+        "Uses less memory than BFS on deep, narrow graphs - only needs to remember the current path",
+        "Naturally suited to problems like cycle detection and topological sort",
+        "Simple recursive implementation",
+      ],
+      cons: [
+        "Doesn't guarantee the shortest path",
+        "Can recurse very deeply on large graphs, risking a stack overflow without an explicit-stack rewrite",
+      ],
+    },
+    complexityComparison:
+      "BFS and DFS both run in O(V + E) time; DFS just uses the call stack instead of a queue, which is why it goes deep instead of level by level. Reach for BFS when you need shortest paths by hop count, DFS when you just need to visit everything or care about path structure like cycles or ordering.",
+    source: DFS_SOURCE,
+    graph: SAMPLE_GRAPH,
+    startNode: SAMPLE_GRAPH_START,
+    run: dfs,
+  },
+  dijkstra: {
+    kind: "graph",
+    slug: "dijkstra",
+    name: "Dijkstra's Algorithm",
+    category: "Graph",
+    difficulty: "Hard",
+    shortDescription: "Finds shortest paths from a source using a priority queue.",
+    timeComplexity: {
+      best: "O((V + E) log V)",
+      average: "O((V + E) log V)",
+      worst: "O((V + E) log V)",
+    },
+    spaceComplexity: "O(V)",
+    overview: {
+      whatItDoes:
+        "Dijkstra's Algorithm finds the shortest path from a source node to every other node in a weighted graph with non-negative weights, always expanding the closest not-yet-finalized node next via a priority queue ordered by distance.",
+      whenToUse:
+        "When you need shortest paths in a weighted graph - for example, routing and navigation, network latency optimization, or any graph where some edges cost more to traverse than others.",
+      pros: [
+        "Guarantees the shortest path in graphs with non-negative weights",
+        "More general than BFS - handles weighted edges, not just hop count",
+        "Finalizes nodes one at a time, so it can stop early once a specific target is reached",
+      ],
+      cons: [
+        "Doesn't work correctly with negative edge weights (use Bellman-Ford instead)",
+        "Needs a priority queue to hit its best time complexity - a naive one degrades toward O(V²)",
+      ],
+    },
+    complexityComparison:
+      "BFS is really Dijkstra's algorithm on a graph where every edge has weight 1 - both expand the closest unvisited node first. Dijkstra generalizes that idea to weighted graphs at the cost of maintaining a priority queue instead of a plain queue. (This implementation re-sorts a plain array every iteration for visualization clarity, rather than a binary heap - correct, but not the O((V+E) log V) textbook bound.)",
+    source: DIJKSTRA_SOURCE,
+    graph: SAMPLE_GRAPH,
+    startNode: SAMPLE_GRAPH_START,
+    run: dijkstra,
+  },
 };
 
 export function getAlgorithm(slug: string): AlgorithmMeta | undefined {
   return ALGORITHM_CATALOG[slug];
 }
 
-/** Homepage category order. Graph/Tree/Searching render as "coming soon"
- * until their algorithms exist (Tree and Searching stay that way for the
- * whole MVP; Graph fills in once Phase 6 lands). */
+/** Homepage category order. Tree and Searching stay "coming soon" for the
+ * whole MVP; Graph now has BFS/DFS/Dijkstra. */
 export const CATEGORY_ORDER: Category[] = ["Sorting", "Graph", "Tree", "Searching"];
 
 export function getAllAlgorithms(): AlgorithmMeta[] {

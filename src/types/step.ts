@@ -11,6 +11,10 @@ export type DataStructureState = {
   queue?: unknown[];
   priorityQueue?: unknown[];
   visitedNodes?: string[];
+  /** Discovery-tree edges (BFS/DFS) or best-known shortest-path-tree edges
+   * (Dijkstra) as [from, to] pairs. Dijkstra can overwrite an entry as
+   * relaxation finds a better predecessor, before that node is finalized. */
+  treeEdges?: [string, string][];
   callStack?: CallStackFrame[];
 };
 
@@ -30,5 +34,9 @@ export type Step = {
   swapping?: [number, number];
   /** Indices after which to draw a divider, e.g. [3] splits between index 3 and 4. */
   dividers?: number[];
+  /** Graph node currently being processed (dequeued/popped/recursed into). */
+  currentNode?: string;
+  /** Graph edge currently being examined/relaxed. */
+  currentEdge?: [string, string];
   dataStructureState?: DataStructureState;
 };

@@ -6,6 +6,7 @@ import { usePlayback } from "@/hooks/use-playback";
 import { getAlgorithm } from "@/lib/algorithms/catalog";
 import { CodeTab } from "./code-tab";
 import { ComplexityTab } from "./complexity-tab";
+import { GraphVisualizationTab } from "./graph-visualization-tab";
 import { OverviewTab } from "./overview-tab";
 import { PracticeTab } from "./practice-tab";
 import { VisualizationTab } from "./visualization-tab";
@@ -19,10 +20,11 @@ import { VisualizationTab } from "./visualization-tab";
  */
 export function AlgorithmPageClient({ slug }: { slug: string }) {
   const algorithm = getAlgorithm(slug)!;
-  const steps = useMemo(
-    () => algorithm.run(algorithm.sampleInput),
-    [algorithm]
-  );
+  const steps = useMemo(() => {
+    return algorithm.kind === "array"
+      ? algorithm.run(algorithm.sampleInput)
+      : algorithm.run(algorithm.graph, algorithm.startNode);
+  }, [algorithm]);
   const playback = usePlayback(steps);
 
   return (
@@ -39,7 +41,11 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
         <OverviewTab algorithm={algorithm} />
       </TabsContent>
       <TabsContent value="visualization">
-        <VisualizationTab playback={playback} />
+        {algorithm.kind === "array" ? (
+          <VisualizationTab playback={playback} />
+        ) : (
+          <GraphVisualizationTab graph={algorithm.graph} playback={playback} />
+        )}
       </TabsContent>
       <TabsContent value="code">
         <CodeTab source={algorithm.source} currentLine={playback.currentStep.lineOfCode} />
