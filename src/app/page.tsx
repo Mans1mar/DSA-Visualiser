@@ -1,26 +1,39 @@
-import Link from "next/link";
+import { CategorySection } from "@/components/home/category-section";
+import { SearchBar } from "@/components/home/search-bar";
+import {
+  CATEGORY_ORDER,
+  getAlgorithmsByCategory,
+  getAllAlgorithms,
+} from "@/lib/algorithms/catalog";
 
 export default function Home() {
+  const searchEntries = getAllAlgorithms().map(({ slug, name, category }) => ({
+    slug,
+    name,
+    category,
+  }));
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-32 text-center">
-      <h1 className="text-3xl font-semibold tracking-tight">DSA Visualizer</h1>
-      <p className="max-w-md text-muted-foreground">
-        Homepage with algorithm categories lands in a later phase. Routing
-        scaffold only for now.
-      </p>
-      <div className="mt-4 flex gap-4 text-sm font-medium">
-        <Link
-          href="/algorithms/merge-sort"
-          className="text-primary underline underline-offset-4"
-        >
-          Merge Sort →
-        </Link>
-        <Link
-          href="/algorithms/quick-sort"
-          className="text-primary underline underline-offset-4"
-        >
-          Quick Sort →
-        </Link>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-12">
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">DSA Visualizer</h1>
+          <p className="mt-1 max-w-xl text-muted-foreground">
+            Watch sorting and graph algorithms run step by step, instead of
+            just reading code or staring at a final answer.
+          </p>
+        </div>
+        <SearchBar algorithms={searchEntries} />
+      </div>
+
+      <div className="flex flex-col gap-10">
+        {CATEGORY_ORDER.map((category) => (
+          <CategorySection
+            key={category}
+            category={category}
+            algorithms={getAlgorithmsByCategory(category)}
+          />
+        ))}
       </div>
     </div>
   );

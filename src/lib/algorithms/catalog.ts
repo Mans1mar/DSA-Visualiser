@@ -98,3 +98,16 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
 export function getAlgorithm(slug: string): AlgorithmMeta | undefined {
   return ALGORITHM_CATALOG[slug];
 }
+
+/** Homepage category order. Graph/Tree/Searching render as "coming soon"
+ * until their algorithms exist (Tree and Searching stay that way for the
+ * whole MVP; Graph fills in once Phase 6 lands). */
+export const CATEGORY_ORDER: Category[] = ["Sorting", "Graph", "Tree", "Searching"];
+
+export function getAllAlgorithms(): AlgorithmMeta[] {
+  return Object.values(ALGORITHM_CATALOG);
+}
+
+export function getAlgorithmsByCategory(category: Category): AlgorithmMeta[] {
+  return getAllAlgorithms().filter((algorithm) => algorithm.category === category);
+}
