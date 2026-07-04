@@ -237,3 +237,13 @@ export function getAllAlgorithms(): AlgorithmMeta[] {
 export function getAlgorithmsByCategory(category: Category): AlgorithmMeta[] {
   return getAllAlgorithms().filter((algorithm) => algorithm.category === category);
 }
+
+/** Runs an algorithm against its own sample input, dispatching on kind -
+ * the one place that needs to know array vs graph run() signatures
+ * differ, so callers (the single algorithm page, Comparison Mode) don't
+ * each have to re-derive it. */
+export function runAlgorithm(algorithm: AlgorithmMeta): Step[] {
+  return algorithm.kind === "array"
+    ? algorithm.run(algorithm.sampleInput)
+    : algorithm.run(algorithm.graph, algorithm.startNode);
+}

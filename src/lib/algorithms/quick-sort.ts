@@ -102,6 +102,7 @@ export function quickSort(input: number[]): Step[] {
         variables: { lo, hi, pivot, i, j },
         pointers: { lo, hi, i, j, pivot: hi },
         comparing: [j, hi],
+        comparisonMade: true,
         array: arr,
       });
 

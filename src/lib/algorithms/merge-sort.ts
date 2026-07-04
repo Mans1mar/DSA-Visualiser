@@ -132,6 +132,7 @@ export function mergeSort(input: number[]): Step[] {
         variables: { i, j, k, left, right },
         pointers: { i, j, k },
         dividers: [mid],
+        comparisonMade: true,
         array: arr,
       });
 

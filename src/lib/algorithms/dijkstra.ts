@@ -120,6 +120,7 @@ export function dijkstra(graph: Graph, start: string): Step[] {
         variables: { node, neighbor, weight, newDist, distances: { ...distances } },
         currentNode: node,
         currentEdge: [node, neighbor],
+        comparisonMade: true,
         priorityQueue: pqLabels(),
       });
 

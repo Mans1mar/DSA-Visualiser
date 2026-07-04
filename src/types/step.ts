@@ -32,6 +32,12 @@ export type Step = {
   pointers?: Record<string, number>;
   comparing?: [number, number];
   swapping?: [number, number];
+  /** A logical comparison happened this step, for stats-counting purposes
+   * (e.g. Comparison Mode) - set this even on steps where `comparing`
+   * can't pinpoint specific array indices to highlight, such as Merge
+   * Sort comparing values from its temporary left/right buffers rather
+   * than live array positions. */
+  comparisonMade?: boolean;
   /** Indices after which to draw a divider, e.g. [3] splits between index 3 and 4. */
   dividers?: number[];
   /** Graph node currently being processed (dequeued/popped/recursed into). */

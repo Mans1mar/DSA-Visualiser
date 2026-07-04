@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayback } from "@/hooks/use-playback";
-import { getAlgorithm } from "@/lib/algorithms/catalog";
+import { getAlgorithm, runAlgorithm } from "@/lib/algorithms/catalog";
 import { CodeTab } from "./code-tab";
 import { ComplexityTab } from "./complexity-tab";
 import { GraphVisualizationTab } from "./graph-visualization-tab";
@@ -20,11 +20,7 @@ import { VisualizationTab } from "./visualization-tab";
  */
 export function AlgorithmPageClient({ slug }: { slug: string }) {
   const algorithm = getAlgorithm(slug)!;
-  const steps = useMemo(() => {
-    return algorithm.kind === "array"
-      ? algorithm.run(algorithm.sampleInput)
-      : algorithm.run(algorithm.graph, algorithm.startNode);
-  }, [algorithm]);
+  const steps = useMemo(() => runAlgorithm(algorithm), [algorithm]);
   const playback = usePlayback(steps);
 
   return (
