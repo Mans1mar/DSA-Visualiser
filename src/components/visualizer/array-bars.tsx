@@ -11,6 +11,7 @@ function isInPair(pair: [number, number] | undefined, index: number) {
 
 export function ArrayBars({ step }: ArrayBarsProps) {
   const array = step.dataStructureState?.array ?? [];
+  const sortedIndices = step.dataStructureState?.sortedIndices;
   const max = Math.max(1, ...array);
 
   return (
@@ -18,13 +19,24 @@ export function ArrayBars({ step }: ArrayBarsProps) {
       {array.map((value, index) => {
         const comparing = isInPair(step.comparing, index);
         const swapping = isInPair(step.swapping, index);
+        const sorted = sortedIndices?.includes(index) ?? false;
+
+        // swapping/comparing reflect what's happening *right now* and take
+        // priority over sorted, which is a persistent, already-final state.
+        const barClass = swapping
+          ? "bar-swapping"
+          : comparing
+            ? "bar-comparing"
+            : sorted
+              ? "bar-sorted"
+              : "bar-default";
 
         return (
           <div
             key={index}
             className={cn(
               "flex flex-1 flex-col items-center justify-end rounded-t-md border-t-2 transition-all duration-300",
-              swapping ? "bar-swapping" : comparing ? "bar-comparing" : "bar-default"
+              barClass
             )}
             style={{ height: `${(value / max) * 100}%` }}
           >

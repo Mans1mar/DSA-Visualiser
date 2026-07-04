@@ -8,9 +8,9 @@ export default function VisualizerDemoPage() {
           Visualization engine demo
         </h1>
         <p className="text-sm text-muted-foreground">
-          Hardcoded steps driving the generic renderer and playback
-          controls, ahead of any real algorithm. Temporary route - it goes
-          away once the real algorithm page (Phase 4) exists.
+          Real, hand-instrumented Merge Sort and Quick Sort running on the
+          same generic renderer and playback controls. Temporary route - it
+          goes away once the real algorithm page (Phase 4) exists.
         </p>
       </div>
       <VisualizerDemo />

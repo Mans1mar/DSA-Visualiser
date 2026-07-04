@@ -5,6 +5,8 @@ export type CallStackFrame = {
 
 export type DataStructureState = {
   array?: number[];
+  /** Indices whose final sorted position is locked in and won't change again. */
+  sortedIndices?: number[];
   stack?: unknown[];
   queue?: unknown[];
   priorityQueue?: unknown[];

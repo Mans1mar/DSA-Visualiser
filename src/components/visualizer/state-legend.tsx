@@ -2,6 +2,7 @@ const ITEMS = [
   { label: "default", color: "var(--chart-1)" },
   { label: "comparing", color: "var(--chart-4)" },
   { label: "swapping", color: "var(--chart-2)" },
+  { label: "sorted", color: "var(--chart-3)" },
 ] as const;
 
 export function StateLegend() {
