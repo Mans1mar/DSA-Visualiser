@@ -158,4 +158,10 @@
     background-color: color-mix(in oklab, var(--chart-5) 16%, transparent);
     color: var(--chart-5);
   }
+
+  /* Code tab: line currently executing, synced to the visualization step */
+  .code-line-active {
+    background-color: color-mix(in oklab, var(--chart-1) 14%, transparent);
+    box-shadow: inset 2px 0 0 var(--chart-1);
+  }
 }

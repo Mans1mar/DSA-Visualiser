@@ -8,12 +8,20 @@ export default function Home() {
         Homepage with algorithm categories lands in a later phase. Routing
         scaffold only for now.
       </p>
-      <Link
-        href="/visualizer-demo"
-        className="mt-4 text-sm font-medium text-primary underline underline-offset-4"
-      >
-        View visualization engine demo →
-      </Link>
+      <div className="mt-4 flex gap-4 text-sm font-medium">
+        <Link
+          href="/algorithms/merge-sort"
+          className="text-primary underline underline-offset-4"
+        >
+          Merge Sort →
+        </Link>
+        <Link
+          href="/algorithms/quick-sort"
+          className="text-primary underline underline-offset-4"
+        >
+          Quick Sort →
+        </Link>
+      </div>
     </div>
   );
 }
