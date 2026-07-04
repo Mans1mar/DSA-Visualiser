@@ -39,6 +39,15 @@ export function quickSort(input: number[]): Step[] {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 
+  // The pivot at index p splits [lo, hi] into [lo, p-1] and [p+1, hi] -
+  // bracket it with dividers on whichever sides are non-empty.
+  function pivotDividers(lo: number, hi: number, p: number): number[] {
+    const dividers: number[] = [];
+    if (p > lo) dividers.push(p - 1);
+    if (p < hi) dividers.push(p);
+    return dividers;
+  }
+
   function partition(lo: number, hi: number): number {
     rec.pushCall({ fnName: "partition", args: [lo, hi] });
 
@@ -111,6 +120,7 @@ export function quickSort(input: number[]): Step[] {
       description: `${pivot} is now in its final sorted position at index ${i + 1}.`,
       variables: { lo, hi, pivot, finalIndex: i + 1 },
       pointers: { lo, hi, pivot: i + 1 },
+      dividers: pivotDividers(lo, hi, i + 1),
       array: arr,
     });
 
@@ -144,6 +154,7 @@ export function quickSort(input: number[]): Step[] {
       description: `Recursively sort the left partition [${lo}, ${p - 1}].`,
       variables: { lo, hi, p },
       pointers: { lo, hi, p },
+      dividers: pivotDividers(lo, hi, p),
       array: arr,
     });
     sort(lo, p - 1);
@@ -153,6 +164,7 @@ export function quickSort(input: number[]): Step[] {
       description: `Recursively sort the right partition [${p + 1}, ${hi}].`,
       variables: { lo, hi, p },
       pointers: { lo, hi, p },
+      dividers: pivotDividers(lo, hi, p),
       array: arr,
     });
     sort(p + 1, hi);

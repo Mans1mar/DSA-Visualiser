@@ -56,6 +56,7 @@ export function mergeSort(input: number[]): Step[] {
       description: `Merge the sorted halves [${lo}, ${mid}] and [${mid + 1}, ${hi}].`,
       variables: { lo, mid, hi },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
 
@@ -66,6 +67,7 @@ export function mergeSort(input: number[]): Step[] {
       description: `Copy out the left half [${left.join(", ")}] and right half [${right.join(", ")}].`,
       variables: { lo, mid, hi, left, right },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
 
@@ -77,6 +79,7 @@ export function mergeSort(input: number[]): Step[] {
       description: "Set up pointers i, j into the two copies, and k into the array.",
       variables: { i, j, k },
       pointers: { i, j, k },
+      dividers: [mid],
       array: arr,
     });
 
@@ -89,6 +92,7 @@ export function mergeSort(input: number[]): Step[] {
           : `left[${i}] = ${left[i]} > right[${j}] = ${right[j]}, so take ${right[j]} from the right half.`,
         variables: { i, j, k, left, right },
         pointers: { i, j, k },
+        dividers: [mid],
         array: arr,
       });
 
@@ -103,6 +107,7 @@ export function mergeSort(input: number[]): Step[] {
         variables: { i, j, k, left, right },
         pointers: { i, j, k },
         swapping: [k, k],
+        dividers: [mid],
         array: arr,
       });
       k++;
@@ -117,6 +122,7 @@ export function mergeSort(input: number[]): Step[] {
         variables: { i, j, k, left, right },
         pointers: { i, j, k },
         swapping: [k, k],
+        dividers: [mid],
         array: arr,
       });
       i++;
@@ -132,6 +138,7 @@ export function mergeSort(input: number[]): Step[] {
         variables: { i, j, k, left, right },
         pointers: { i, j, k },
         swapping: [k, k],
+        dividers: [mid],
         array: arr,
       });
       j++;
@@ -181,6 +188,7 @@ export function mergeSort(input: number[]): Step[] {
       description: `Split at mid = ${mid}.`,
       variables: { lo, hi, mid },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
 
@@ -189,6 +197,7 @@ export function mergeSort(input: number[]): Step[] {
       description: `Recursively sort the left half [${lo}, ${mid}].`,
       variables: { lo, hi, mid },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
     sort(lo, mid);
@@ -198,6 +207,7 @@ export function mergeSort(input: number[]): Step[] {
       description: `Recursively sort the right half [${mid + 1}, ${hi}].`,
       variables: { lo, hi, mid },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
     sort(mid + 1, hi);
@@ -207,6 +217,7 @@ export function mergeSort(input: number[]): Step[] {
       description: "Both halves are sorted individually - merge them.",
       variables: { lo, hi, mid },
       pointers: { lo, mid, hi },
+      dividers: [mid],
       array: arr,
     });
     merge(lo, mid, hi);

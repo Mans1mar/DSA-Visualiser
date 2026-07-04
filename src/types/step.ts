@@ -28,5 +28,7 @@ export type Step = {
   pointers?: Record<string, number>;
   comparing?: [number, number];
   swapping?: [number, number];
+  /** Indices after which to draw a divider, e.g. [3] splits between index 3 and 4. */
+  dividers?: number[];
   dataStructureState?: DataStructureState;
 };
