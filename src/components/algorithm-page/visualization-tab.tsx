@@ -9,10 +9,10 @@ type Playback = ReturnType<typeof usePlayback>;
 
 export function VisualizationTab({
   playback,
-  source,
+  pseudocode,
 }: {
   playback: Playback;
-  source: string[];
+  pseudocode: string[];
 }) {
   const {
     currentStep,
@@ -32,8 +32,9 @@ export function VisualizationTab({
   return (
     <div className="flex flex-col gap-6">
       {/* Visual + controls stay adjacent so play/step/reset never require
-          scrolling away from what's on screen; the code panel sits beside
-          them instead of behind a separate tab. */}
+          scrolling away from what's on screen; pseudocode sits beside
+          them (kept short via self-start + max-height) instead of
+          pushing the explanation further down the page. */}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <ArrayBars step={currentStep} />
@@ -50,8 +51,8 @@ export function VisualizationTab({
             onSpeedChange={setSpeed}
           />
         </div>
-        <div className="max-h-[440px] overflow-y-auto">
-          <CodeTab source={source} currentLine={currentStep.lineOfCode} />
+        <div className="max-h-[300px] self-start overflow-y-auto">
+          <CodeTab source={pseudocode} currentLine={currentStep.lineOfCode} />
         </div>
       </div>
 

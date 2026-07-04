@@ -19,6 +19,23 @@ export const BFS_SOURCE = [
   "}",
 ];
 
+// Line-for-line pseudocode counterpart to BFS_SOURCE.
+export const BFS_PSEUDOCODE = [
+  "function bfs(graph, start)",
+  "    visited = {start}",
+  "    queue = [start]",
+  "    while queue is not empty",
+  "        node = remove front of queue",
+  "        for each neighbor of node",
+  "            if neighbor not in visited",
+  "                add neighbor to visited",
+  "                add neighbor to back of queue",
+  "            end if",
+  "        end for",
+  "    end while",
+  "end function",
+];
+
 /**
  * Explores level by level via an explicit queue. A node is marked
  * visited the moment it's *discovered* (enqueued), not when it's later

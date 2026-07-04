@@ -37,6 +37,45 @@ export const MERGE_SORT_SOURCE = [
   "}",
 ];
 
+// Line-for-line pseudocode counterpart to MERGE_SORT_SOURCE - every
+// lineOfCode the algorithm below emits refers to the same line number
+// in both, so swapping between them never breaks highlighting.
+export const MERGE_SORT_PSEUDOCODE = [
+  "function mergeSort(array, lo, hi)",
+  "    if lo >= hi, return",
+  "    mid = middle index of lo..hi",
+  "    mergeSort(array, lo, mid)",
+  "    mergeSort(array, mid + 1, hi)",
+  "    merge(array, lo, mid, hi)",
+  "end function",
+  "",
+  "function merge(array, lo, mid, hi)",
+  "    left = copy of array[lo..mid]",
+  "    right = copy of array[mid+1..hi]",
+  "    i = 0, j = 0, k = lo",
+  "    while i < length(left) and j < length(right)",
+  "        if left[i] <= right[j]",
+  "            array[k] = left[i]",
+  "            i = i + 1",
+  "        else",
+  "            array[k] = right[j]",
+  "            j = j + 1",
+  "        end if",
+  "        k = k + 1",
+  "    end while",
+  "    while i < length(left)",
+  "        array[k] = left[i]",
+  "        i = i + 1",
+  "        k = k + 1",
+  "    end while",
+  "    while j < length(right)",
+  "        array[k] = right[j]",
+  "        j = j + 1",
+  "        k = k + 1",
+  "    end while",
+  "end function",
+];
+
 /**
  * Merge sort never finalizes an index's position until the outermost
  * merge (the one spanning the whole array) completes - a range merged

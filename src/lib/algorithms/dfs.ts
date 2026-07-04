@@ -14,6 +14,18 @@ export const DFS_SOURCE = [
   "}",
 ];
 
+// Line-for-line pseudocode counterpart to DFS_SOURCE.
+export const DFS_PSEUDOCODE = [
+  "function dfs(graph, node, visited)",
+  "    add node to visited",
+  "    for each neighbor of node",
+  "        if neighbor not in visited",
+  "            dfs(graph, neighbor, visited)",
+  "        end if",
+  "    end for",
+  "end function",
+];
+
 /**
  * Explores as deep as possible before backtracking, via real recursion -
  * the call stack IS the algorithm's traversal stack, unlike BFS's

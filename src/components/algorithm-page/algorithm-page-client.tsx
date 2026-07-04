@@ -42,12 +42,12 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
       </TabsContent>
       <TabsContent value="visualization">
         {algorithm.kind === "array" ? (
-          <VisualizationTab playback={playback} source={algorithm.source} />
+          <VisualizationTab playback={playback} pseudocode={algorithm.pseudocode} />
         ) : (
           <GraphVisualizationTab
             graph={algorithm.graph}
             playback={playback}
-            source={algorithm.source}
+            pseudocode={algorithm.pseudocode}
           />
         )}
       </TabsContent>

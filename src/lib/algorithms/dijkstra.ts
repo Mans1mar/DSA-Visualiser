@@ -25,6 +25,29 @@ export const DIJKSTRA_SOURCE = [
   "}",
 ];
 
+// Line-for-line pseudocode counterpart to DIJKSTRA_SOURCE.
+export const DIJKSTRA_PSEUDOCODE = [
+  "function dijkstra(graph, start)",
+  "    dist[start] = 0, dist[every other node] = infinity",
+  "    pq = [(start, 0)]",
+  "    visited = {}",
+  "    while pq is not empty",
+  "        sort pq by distance, closest first",
+  "        (node, d) = remove closest entry from pq",
+  "        if node in visited, skip it",
+  "        add node to visited",
+  "        for each neighbor of node with edge weight w",
+  "            newDist = d + w",
+  "            if newDist < dist[neighbor]",
+  "                dist[neighbor] = newDist",
+  "                add (neighbor, newDist) to pq",
+  "            end if",
+  "        end for",
+  "    end while",
+  "    return dist",
+  "end function",
+];
+
 function formatDist(d: number): string {
   return d === Infinity ? "infinity" : String(d);
 }

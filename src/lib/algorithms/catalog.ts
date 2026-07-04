@@ -1,8 +1,8 @@
-import { MERGE_SORT_SOURCE, mergeSort } from "./merge-sort";
-import { QUICK_SORT_SOURCE, quickSort } from "./quick-sort";
-import { BFS_SOURCE, bfs } from "./bfs";
-import { DFS_SOURCE, dfs } from "./dfs";
-import { DIJKSTRA_SOURCE, dijkstra } from "./dijkstra";
+import { MERGE_SORT_SOURCE, MERGE_SORT_PSEUDOCODE, mergeSort } from "./merge-sort";
+import { QUICK_SORT_SOURCE, QUICK_SORT_PSEUDOCODE, quickSort } from "./quick-sort";
+import { BFS_SOURCE, BFS_PSEUDOCODE, bfs } from "./bfs";
+import { DFS_SOURCE, DFS_PSEUDOCODE, dfs } from "./dfs";
+import { DIJKSTRA_SOURCE, DIJKSTRA_PSEUDOCODE, dijkstra } from "./dijkstra";
 import { SAMPLE_GRAPH, SAMPLE_GRAPH_START } from "@/lib/graph/sample-graph";
 import type { Graph } from "@/lib/graph/types";
 import type { Step } from "@/types/step";
@@ -31,7 +31,12 @@ type BaseAlgorithmMeta = {
     cons: string[];
   };
   complexityComparison: string;
+  /** Real, runnable-ish JS shown in the standalone Code tab. */
   source: string[];
+  /** Higher-level pseudocode shown inline next to the visualization -
+   * line-for-line matched to `source` so the same lineOfCode highlights
+   * the right line in either one. */
+  pseudocode: string[];
 };
 
 export type ArrayAlgorithmMeta = BaseAlgorithmMeta & {
@@ -80,6 +85,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     complexityComparison:
       "Quick Sort is usually faster in practice thanks to better cache locality and no extra allocation, but it has an O(n²) worst case. Merge Sort trades that worst case away for a guaranteed O(n log n) runtime, at the cost of O(n) extra memory.",
     source: MERGE_SORT_SOURCE,
+    pseudocode: MERGE_SORT_PSEUDOCODE,
     sampleInput: SAMPLE_INPUT,
     run: mergeSort,
   },
@@ -110,6 +116,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     complexityComparison:
       "Merge Sort guarantees O(n log n) but needs O(n) extra space. Quick Sort is typically faster and uses only O(log n) space, at the risk of degrading to O(n²) on unlucky pivot choices.",
     source: QUICK_SORT_SOURCE,
+    pseudocode: QUICK_SORT_PSEUDOCODE,
     sampleInput: SAMPLE_INPUT,
     run: quickSort,
   },
@@ -140,6 +147,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     complexityComparison:
       "DFS explores the same graph in the same O(V + E) time but trades BFS's shortest-path guarantee for lower typical memory use, since it only needs to remember one path at a time via the call stack. Dijkstra generalizes BFS to weighted graphs at the cost of a priority queue.",
     source: BFS_SOURCE,
+    pseudocode: BFS_PSEUDOCODE,
     graph: SAMPLE_GRAPH,
     startNode: SAMPLE_GRAPH_START,
     run: bfs,
@@ -171,6 +179,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     complexityComparison:
       "BFS and DFS both run in O(V + E) time; DFS just uses the call stack instead of a queue, which is why it goes deep instead of level by level. Reach for BFS when you need shortest paths by hop count, DFS when you just need to visit everything or care about path structure like cycles or ordering.",
     source: DFS_SOURCE,
+    pseudocode: DFS_PSEUDOCODE,
     graph: SAMPLE_GRAPH,
     startNode: SAMPLE_GRAPH_START,
     run: dfs,
@@ -206,6 +215,7 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     complexityComparison:
       "BFS is really Dijkstra's algorithm on a graph where every edge has weight 1 - both expand the closest unvisited node first. Dijkstra generalizes that idea to weighted graphs at the cost of maintaining a priority queue instead of a plain queue. (This implementation re-sorts a plain array every iteration for visualization clarity, rather than a binary heap - correct, but not the O((V+E) log V) textbook bound.)",
     source: DIJKSTRA_SOURCE,
+    pseudocode: DIJKSTRA_PSEUDOCODE,
     graph: SAMPLE_GRAPH,
     startNode: SAMPLE_GRAPH_START,
     run: dijkstra,

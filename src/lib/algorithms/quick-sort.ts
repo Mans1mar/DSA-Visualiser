@@ -23,6 +23,29 @@ export const QUICK_SORT_SOURCE = [
   "}",
 ];
 
+// Line-for-line pseudocode counterpart to QUICK_SORT_SOURCE.
+export const QUICK_SORT_PSEUDOCODE = [
+  "function quickSort(array, lo, hi)",
+  "    if lo >= hi, return",
+  "    p = partition(array, lo, hi)",
+  "    quickSort(array, lo, p - 1)",
+  "    quickSort(array, p + 1, hi)",
+  "end function",
+  "",
+  "function partition(array, lo, hi)",
+  "    pivot = array[hi]",
+  "    i = lo - 1",
+  "    for j = lo to hi - 1",
+  "        if array[j] < pivot",
+  "            i = i + 1",
+  "            swap array[i] and array[j]",
+  "        end if",
+  "    end for",
+  "    swap array[i + 1] and array[hi]",
+  "    return i + 1",
+  "end function",
+];
+
 /**
  * Lomuto partitioning places the pivot at its final sorted index the
  * moment partition() returns - later recursive calls only ever touch
