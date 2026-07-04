@@ -34,33 +34,32 @@ export function GraphVisualizationTab({
   } = playback;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Visual + controls stay adjacent so play/step/reset never require
-          scrolling away from what's on screen; pseudocode sits beside
-          them (kept short via self-start + max-height) instead of
-          pushing the explanation further down the page. */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <GraphView graph={graph} step={currentStep} />
-          <GraphStateLegend />
-          <PlaybackControls
-            isPlaying={isPlaying}
-            isAtStart={isAtStart}
-            isAtEnd={isAtEnd}
-            speed={speed}
-            onToggle={toggle}
-            onNext={next}
-            onPrev={prev}
-            onReset={reset}
-            onSpeedChange={setSpeed}
-          />
-        </div>
-        <div className="max-h-[300px] self-start overflow-y-auto">
-          <CodeTab source={pseudocode} currentLine={currentStep.lineOfCode} />
-        </div>
+    // Visual + controls stay adjacent in their own column so play/step/
+    // reset never require scrolling away from what's on screen. The
+    // pseudocode column carries the explanation and auxiliary panels
+    // right underneath it, rather than a separate full-width row.
+    <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="flex flex-col gap-4">
+        <GraphView graph={graph} step={currentStep} />
+        <GraphStateLegend />
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isAtStart={isAtStart}
+          isAtEnd={isAtEnd}
+          speed={speed}
+          onToggle={toggle}
+          onNext={next}
+          onPrev={prev}
+          onReset={reset}
+          onSpeedChange={setSpeed}
+        />
       </div>
 
       <div className="flex flex-col gap-4">
+        <div className="max-h-[300px] overflow-y-auto">
+          <CodeTab source={pseudocode} currentLine={currentStep.lineOfCode} />
+        </div>
+
         <div className="space-y-1">
           <p className="text-sm text-foreground">{currentStep.description}</p>
           <p className="text-xs text-muted-foreground">
