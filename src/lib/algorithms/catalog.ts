@@ -1,5 +1,16 @@
+import { BUBBLE_SORT_SOURCES, BUBBLE_SORT_PSEUDOCODE, bubbleSort } from "./bubble-sort";
+import {
+  INSERTION_SORT_SOURCES,
+  INSERTION_SORT_PSEUDOCODE,
+  insertionSort,
+} from "./insertion-sort";
 import { MERGE_SORT_SOURCES, MERGE_SORT_PSEUDOCODE, mergeSort } from "./merge-sort";
 import { QUICK_SORT_SOURCES, QUICK_SORT_PSEUDOCODE, quickSort } from "./quick-sort";
+import {
+  SELECTION_SORT_SOURCES,
+  SELECTION_SORT_PSEUDOCODE,
+  selectionSort,
+} from "./selection-sort";
 import { BFS_SOURCES, BFS_PSEUDOCODE, bfs } from "./bfs";
 import { DFS_SOURCES, DFS_PSEUDOCODE, dfs } from "./dfs";
 import { DIJKSTRA_SOURCES, DIJKSTRA_PSEUDOCODE, dijkstra } from "./dijkstra";
@@ -121,6 +132,106 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     pseudocode: QUICK_SORT_PSEUDOCODE,
     sampleInput: SAMPLE_INPUT,
     run: quickSort,
+  },
+  "bubble-sort": {
+    kind: "array",
+    slug: "bubble-sort",
+    name: "Bubble Sort",
+    category: "Sorting",
+    difficulty: "Easy",
+    shortDescription:
+      "Repeatedly steps through the array, swapping adjacent elements that are out of order.",
+    timeComplexity: { best: "O(n)", average: "O(n²)", worst: "O(n²)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Bubble Sort repeatedly steps through the array, comparing each pair of adjacent elements and swapping them if they're out of order. Each full pass bubbles the largest remaining value up to its final position at the end of the unsorted range, and the passes repeat until one completes with no swaps.",
+      whenToUse:
+        "Rarely the right choice for real workloads - reach for it mainly as a teaching tool for the idea of repeated adjacent comparisons, or for tiny or nearly-sorted inputs where its early-exit optimization makes it competitive.",
+      pros: [
+        "Extremely simple to understand and implement",
+        "In-place - O(1) extra memory",
+        "Early-exit optimization makes it O(n) on already-sorted input",
+        "Stable - equal elements retain their original order",
+      ],
+      cons: [
+        "O(n²) time on average and in the worst case",
+        "Far more swaps in practice than Selection Sort for the same input",
+        "Rarely used outside of teaching",
+      ],
+    },
+    complexityComparison:
+      "Selection Sort makes the same O(n²) comparisons but far fewer swaps, since it swaps at most once per pass instead of on every out-of-order pair. Insertion Sort is usually faster in practice on nearly-sorted data. Merge Sort and Quick Sort both beat Bubble Sort asymptotically at O(n log n).",
+    sources: BUBBLE_SORT_SOURCES,
+    pseudocode: BUBBLE_SORT_PSEUDOCODE,
+    sampleInput: SAMPLE_INPUT,
+    run: bubbleSort,
+  },
+  "selection-sort": {
+    kind: "array",
+    slug: "selection-sort",
+    name: "Selection Sort",
+    category: "Sorting",
+    difficulty: "Easy",
+    shortDescription:
+      "Repeatedly selects the minimum of the unsorted portion and swaps it into place.",
+    timeComplexity: { best: "O(n²)", average: "O(n²)", worst: "O(n²)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Selection Sort divides the array into a sorted prefix and an unsorted suffix. On each pass it scans the entire unsorted suffix to find its minimum, then swaps that minimum into the next position of the sorted prefix.",
+      whenToUse:
+        "When the cost of a swap is much higher than the cost of a comparison - for example writing to slow memory. Selection Sort makes at most n - 1 swaps total, far fewer than Bubble Sort, at the cost of always scanning the full remaining range even when the input is already sorted.",
+      pros: [
+        "Simple to implement",
+        "In-place - O(1) extra memory",
+        "Minimizes the number of swaps - at most n - 1 total",
+      ],
+      cons: [
+        "O(n²) time in every case - doesn't benefit at all from partially-sorted input",
+        "Not stable in its typical implementation - equal elements can be reordered",
+        "Slower in practice than Insertion Sort despite fewer swaps, due to always scanning the full remaining range",
+      ],
+    },
+    complexityComparison:
+      "Bubble Sort and Insertion Sort can finish early or skip work on nearly-sorted input; Selection Sort always performs the same O(n²) comparisons regardless of input order, trading that adaptability for a guaranteed low swap count.",
+    sources: SELECTION_SORT_SOURCES,
+    pseudocode: SELECTION_SORT_PSEUDOCODE,
+    sampleInput: SAMPLE_INPUT,
+    run: selectionSort,
+  },
+  "insertion-sort": {
+    kind: "array",
+    slug: "insertion-sort",
+    name: "Insertion Sort",
+    category: "Sorting",
+    difficulty: "Easy",
+    shortDescription:
+      "Builds a sorted prefix one element at a time by shifting larger values right.",
+    timeComplexity: { best: "O(n)", average: "O(n²)", worst: "O(n²)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Insertion Sort builds up a sorted prefix one element at a time: it takes the next unsorted element and shifts larger elements in the sorted prefix rightward until it finds the correct place to insert it.",
+      whenToUse:
+        "For small arrays or nearly-sorted data, where it's typically the fastest simple sort - many production sort implementations fall back to Insertion Sort below some small size threshold. Also useful as an online algorithm, sorting data as it arrives.",
+      pros: [
+        "Adaptive - runs in close to O(n) time on nearly-sorted input",
+        "Stable - equal elements retain their original order",
+        "In-place - O(1) extra memory",
+        "Works well as an online algorithm, sorting data as it arrives",
+      ],
+      cons: [
+        "O(n²) time on average and in the worst case for random or reverse-sorted input",
+        "Shifting elements makes it slower than Selection Sort's raw swap count on large, randomly-ordered arrays",
+      ],
+    },
+    complexityComparison:
+      "Insertion Sort is the most adaptive of the three simple sorts - it does the least work on nearly-sorted input, unlike Selection Sort's constant O(n²) regardless of order. Merge Sort and Quick Sort both scale better to large inputs at O(n log n), but carry more overhead that makes Insertion Sort competitive at small sizes.",
+    sources: INSERTION_SORT_SOURCES,
+    pseudocode: INSERTION_SORT_PSEUDOCODE,
+    sampleInput: SAMPLE_INPUT,
+    run: insertionSort,
   },
   bfs: {
     kind: "graph",
