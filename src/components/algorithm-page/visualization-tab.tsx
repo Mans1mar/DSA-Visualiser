@@ -104,8 +104,13 @@ export function VisualizationTab({
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="max-h-[300px] overflow-y-auto">
-          <CodeTab source={pseudocode} currentLine={currentStep.lineOfCode} />
+        <div className="flex flex-col gap-2">
+          <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Pseudo-Code
+          </h3>
+          <div className="max-h-[300px] overflow-y-auto">
+            <CodeTab source={pseudocode} currentLine={currentStep.lineOfCode} />
+          </div>
         </div>
 
         <div className="space-y-1">

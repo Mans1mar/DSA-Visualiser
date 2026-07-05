@@ -21,8 +21,8 @@ export default function Home() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">DSA Visualizer</h1>
             <p className="mt-1 max-w-xl text-muted-foreground">
-              Watch sorting and graph algorithms run step by step, instead of
-              just reading code or staring at a final answer.
+              Watch algorithms run step by step, instead of just reading code
+              or staring at a final answer.
             </p>
           </div>
           <Link

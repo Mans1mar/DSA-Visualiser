@@ -1,3 +1,5 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
 
@@ -10,6 +12,13 @@ const DIFFICULTY_CLASS: Record<AlgorithmMeta["difficulty"], string> = {
 export function AlgorithmHeader({ algorithm }: { algorithm: AlgorithmMeta }) {
   return (
     <div className="flex flex-col gap-3">
+      <Link
+        href="/"
+        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        All algorithms
+      </Link>
       <div className="flex flex-wrap items-center gap-3">
         <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {algorithm.category}
