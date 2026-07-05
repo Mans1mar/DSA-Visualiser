@@ -38,8 +38,13 @@ export type Step = {
    * Sort comparing values from its temporary left/right buffers rather
    * than live array positions. */
   comparisonMade?: boolean;
-  /** Indices after which to draw a divider, e.g. [3] splits between index 3 and 4. */
-  dividers?: number[];
+  /** Indices after which to draw a divider, e.g. index 3 splits between
+   * index 3 and 4. `depth` is how many splits are currently nested at
+   * that boundary - 0 is the outermost/first split still in play,
+   * increasing for each split nested inside it - so the renderer can
+   * draw shallower splits with a longer line and deeper ones
+   * progressively shorter, making recursion depth visible at a glance. */
+  dividers?: { index: number; depth: number }[];
   /** Graph node currently being processed (dequeued/popped/recursed into). */
   currentNode?: string;
   /** Graph edge currently being examined/relaxed. */

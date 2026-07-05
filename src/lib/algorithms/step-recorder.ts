@@ -1,7 +1,14 @@
 import type { CallStackFrame, Step } from "@/types/step";
 
-type StepInput = Omit<Step, "stepIndex" | "dataStructureState"> & {
+type StepInput = Omit<Step, "stepIndex" | "dataStructureState" | "dividers"> & {
   array: number[];
+  /** Plain indices, no depth - only for a divider being introduced this
+   * exact step, before it's been pushed onto the persistent stack (e.g.
+   * the instant a pivot lands, one step before quickSort's caller pushes
+   * it). record() assigns it the depth it's about to occupy. Anything
+   * already "in play" belongs on the pushDividers()/popDividers() stack
+   * instead, not here. */
+  dividers?: number[];
 };
 
 /**
@@ -52,11 +59,25 @@ export class StepRecorder {
   }
 
   record({ array, dividers, ...rest }: StepInput) {
-    const activeDividers = [...new Set([...this.dividerFrames.flat(), ...(dividers ?? [])])];
+    const active: { index: number; depth: number }[] = [];
+    const seen = new Set<number>();
+    const addDivider = (index: number, depth: number) => {
+      if (seen.has(index)) return;
+      seen.add(index);
+      active.push({ index, depth });
+    };
+
+    this.dividerFrames.forEach((frame, depth) => {
+      for (const index of frame) addDivider(index, depth);
+    });
+    // Not yet pushed, so not reflected in dividerFrames.length above -
+    // this is the depth it will occupy once its caller pushes it.
+    for (const index of dividers ?? []) addDivider(index, this.dividerFrames.length);
+
     this.steps.push({
       stepIndex: this.steps.length,
       ...rest,
-      dividers: activeDividers.length > 0 ? activeDividers : undefined,
+      dividers: active.length > 0 ? active : undefined,
       dataStructureState: {
         array: [...array],
         callStack: this.callStack.map((frame) => ({ ...frame })),
