@@ -347,8 +347,12 @@ export function getAllAlgorithms(): AlgorithmMeta[] {
   return Object.values(ALGORITHM_CATALOG);
 }
 
+const DIFFICULTY_ORDER: Record<Difficulty, number> = { Easy: 0, Medium: 1, Hard: 2 };
+
 export function getAlgorithmsByCategory(category: Category): AlgorithmMeta[] {
-  return getAllAlgorithms().filter((algorithm) => algorithm.category === category);
+  return getAllAlgorithms()
+    .filter((algorithm) => algorithm.category === category)
+    .sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);
 }
 
 /** Runs an algorithm against an explicit input (a custom/random array or

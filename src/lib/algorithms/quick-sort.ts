@@ -220,13 +220,17 @@ export function quickSort(input: number[]): Step[] {
     }
 
     const p = partition(lo, hi);
+    // Pushed once the pivot's final index is known, popped after both
+    // recursive calls return - so the boundary it creates stays visible
+    // for as long as either side is still being sorted, not just the
+    // instant the pivot landed.
+    rec.pushDividers(pivotDividers(lo, hi, p));
 
     rec.record({
       lineOfCode: 4,
       description: `Recursively sort the left partition [${lo}, ${p - 1}].`,
       variables: { lo, hi, p },
       pointers: { lo, hi, p },
-      dividers: pivotDividers(lo, hi, p),
       array: arr,
     });
     sort(lo, p - 1);
@@ -236,11 +240,11 @@ export function quickSort(input: number[]): Step[] {
       description: `Recursively sort the right partition [${p + 1}, ${hi}].`,
       variables: { lo, hi, p },
       pointers: { lo, hi, p },
-      dividers: pivotDividers(lo, hi, p),
       array: arr,
     });
     sort(p + 1, hi);
 
+    rec.popDividers();
     rec.popCall();
   }
 

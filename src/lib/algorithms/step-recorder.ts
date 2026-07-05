@@ -14,6 +14,7 @@ export class StepRecorder {
   private steps: Step[] = [];
   private callStack: CallStackFrame[] = [];
   private sortedIndices = new Set<number>();
+  private dividerFrames: number[][] = [];
 
   pushCall(frame: CallStackFrame) {
     this.callStack.push(frame);
@@ -31,10 +32,31 @@ export class StepRecorder {
     for (let i = 0; i < length; i++) this.sortedIndices.add(i);
   }
 
-  record({ array, ...rest }: StepInput) {
+  /**
+   * Divide-and-conquer algorithms call this once they've committed to a
+   * split point, and popDividers() once both halves (and any merge/
+   * finalize step) have finished with it. Every record() in between -
+   * including ones made by deeper recursive calls - automatically shows
+   * this boundary, so the dotted line marking a split stays on screen
+   * for as long as that split is actually "in play" instead of only the
+   * instant it's chosen. Nested splits stack: a step recorded three
+   * levels deep shows all three ancestors' boundaries at once, which is
+   * exactly the currently-active range at each level of recursion.
+   */
+  pushDividers(indices: number[]) {
+    this.dividerFrames.push(indices);
+  }
+
+  popDividers() {
+    this.dividerFrames.pop();
+  }
+
+  record({ array, dividers, ...rest }: StepInput) {
+    const activeDividers = [...new Set([...this.dividerFrames.flat(), ...(dividers ?? [])])];
     this.steps.push({
       stepIndex: this.steps.length,
       ...rest,
+      dividers: activeDividers.length > 0 ? activeDividers : undefined,
       dataStructureState: {
         array: [...array],
         callStack: this.callStack.map((frame) => ({ ...frame })),

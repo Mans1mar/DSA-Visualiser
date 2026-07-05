@@ -9,17 +9,22 @@ import { computeRunningStats } from "@/lib/visualizer/comparison-stats";
 import type { Step } from "@/types/step";
 import { StatsPanel } from "./stats-panel";
 
-type ComparisonSideProps = {
+/**
+ * Split from a single ComparisonSide into an info half (name, visual,
+ * legend, description) and a stats half so the caller can lay the two
+ * halves out independently - on a phone screen it shows both sides'
+ * info together, then both sides' stats together, rather than repeating
+ * info/stats/info/stats down the page.
+ */
+type ComparisonSideInfoProps = {
   algorithm: AlgorithmMeta;
   /** The graph actually run (custom/random or the algorithm's own
    * default) - not derived from algorithm.graph, since that's always
    * the catalog default and wouldn't reflect a shared custom graph. */
   graph: Graph | null;
-  steps: Step[];
   currentStep: Step;
   currentIndex: number;
   totalSteps: number;
-  computeTimeMs: number;
   /** Shared across both sides by the caller (max of each side's own
    * need), not computed per side - otherwise Merge Sort and Quick Sort
    * would each reserve a different amount of pointer-row space and
@@ -27,21 +32,14 @@ type ComparisonSideProps = {
   maxPointerRows: number;
 };
 
-export function ComparisonSide({
+export function ComparisonSideInfo({
   algorithm,
   graph,
-  steps,
   currentStep,
   currentIndex,
   totalSteps,
-  computeTimeMs,
   maxPointerRows,
-}: ComparisonSideProps) {
-  const stats = useMemo(
-    () => computeRunningStats(steps, currentIndex),
-    [steps, currentIndex]
-  );
-
+}: ComparisonSideInfoProps) {
   return (
     <div className="flex flex-col gap-4">
       <h3 className="font-semibold">{algorithm.name}</h3>
@@ -61,8 +59,27 @@ export function ComparisonSide({
           Step {currentIndex + 1} of {totalSteps} · line {currentStep.lineOfCode}
         </p>
       </div>
-
-      <StatsPanel stats={stats} computeTimeMs={computeTimeMs} algorithm={algorithm} />
     </div>
   );
+}
+
+type ComparisonSideStatsProps = {
+  algorithm: AlgorithmMeta;
+  steps: Step[];
+  currentIndex: number;
+  computeTimeMs: number;
+};
+
+export function ComparisonSideStats({
+  algorithm,
+  steps,
+  currentIndex,
+  computeTimeMs,
+}: ComparisonSideStatsProps) {
+  const stats = useMemo(
+    () => computeRunningStats(steps, currentIndex),
+    [steps, currentIndex]
+  );
+
+  return <StatsPanel stats={stats} computeTimeMs={computeTimeMs} algorithm={algorithm} />;
 }

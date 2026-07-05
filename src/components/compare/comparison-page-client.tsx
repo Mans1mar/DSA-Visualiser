@@ -14,7 +14,7 @@ import {
 import type { Graph } from "@/lib/graph/types";
 import { computeMaxPointerStack } from "@/lib/visualizer/layout-stability";
 import { AlgorithmSelect } from "./algorithm-select";
-import { ComparisonSide } from "./comparison-side";
+import { ComparisonSideInfo, ComparisonSideStats } from "./comparison-side";
 
 const DEFAULT_SLUG_A = "merge-sort";
 const DEFAULT_SLUG_B = "quick-sort";
@@ -155,28 +155,54 @@ export function ComparisonPageClient() {
         onSpeedChange={playback.setSpeed}
       />
 
-      {/* grid-cols-1 matters even below lg - see visualization-tab.tsx */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ComparisonSide
-          algorithm={algorithmA}
-          graph={activeGraph}
-          steps={stepsA}
-          currentStep={playback.currentStepA}
-          currentIndex={playback.indexA}
-          totalSteps={stepsA.length}
-          computeTimeMs={computeTimeMsA}
-          maxPointerRows={maxPointerRows}
-        />
-        <ComparisonSide
-          algorithm={algorithmB}
-          graph={activeGraph}
-          steps={stepsB}
-          currentStep={playback.currentStepB}
-          currentIndex={playback.indexB}
-          totalSteps={stepsB.length}
-          computeTimeMs={computeTimeMsB}
-          maxPointerRows={maxPointerRows}
-        />
+      {/*
+        grid-cols-1 matters even below lg - see visualization-tab.tsx.
+
+        DOM order is info-A, info-B, stats-A, stats-B. On a single-column
+        phone layout that's exactly the stacking order: both visuals (plus
+        legend/description) together first, then both stats panels
+        together after - instead of repeating info/stats/info/stats, which
+        forces scrolling back and forth to compare the two. At lg, explicit
+        grid placement pins each side back into its own two-row column so
+        the side-by-side comparison layout is unchanged there.
+      */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-x-10">
+        <div className="lg:col-start-1 lg:row-start-1">
+          <ComparisonSideInfo
+            algorithm={algorithmA}
+            graph={activeGraph}
+            currentStep={playback.currentStepA}
+            currentIndex={playback.indexA}
+            totalSteps={stepsA.length}
+            maxPointerRows={maxPointerRows}
+          />
+        </div>
+        <div className="lg:col-start-2 lg:row-start-1">
+          <ComparisonSideInfo
+            algorithm={algorithmB}
+            graph={activeGraph}
+            currentStep={playback.currentStepB}
+            currentIndex={playback.indexB}
+            totalSteps={stepsB.length}
+            maxPointerRows={maxPointerRows}
+          />
+        </div>
+        <div className="lg:col-start-1 lg:row-start-2">
+          <ComparisonSideStats
+            algorithm={algorithmA}
+            steps={stepsA}
+            currentIndex={playback.indexA}
+            computeTimeMs={computeTimeMsA}
+          />
+        </div>
+        <div className="lg:col-start-2 lg:row-start-2">
+          <ComparisonSideStats
+            algorithm={algorithmB}
+            steps={stepsB}
+            currentIndex={playback.indexB}
+            computeTimeMs={computeTimeMsB}
+          />
+        </div>
       </div>
     </div>
   );
