@@ -87,6 +87,7 @@ export function VisualizationTab({
           <TargetInputControls
             key={`${resetKey}-target`}
             initialValue={target}
+            arrayValues={arrayInput}
             onChange={onTargetChange}
           />
         )}

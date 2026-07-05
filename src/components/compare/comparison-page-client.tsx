@@ -168,6 +168,7 @@ export function ComparisonPageClient() {
         <TargetInputControls
           key={`${algorithmA.category}-target`}
           initialValue={activeTarget}
+          arrayValues={activeArrayInput ?? []}
           onChange={setCustomTarget}
         />
       )}

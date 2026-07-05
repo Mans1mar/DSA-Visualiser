@@ -6,12 +6,19 @@ import { Button } from "@/components/ui/button";
 const MIN_VALUE = 1;
 const MAX_VALUE = 200;
 const RANDOM_MAX = 99;
+/** How often Randomize picks a value that's actually in the array
+ * (guaranteed found) versus a genuinely random one (usually absent) -
+ * mostly demonstrates the found path, the more instructive case, while
+ * still exercising not-found regularly rather than never. */
+const PRESENT_VALUE_CHANCE = 0.7;
 
 export function TargetInputControls({
   initialValue,
+  arrayValues,
   onChange,
 }: {
   initialValue: number;
+  arrayValues: number[];
   onChange: (target: number) => void;
 }) {
   const [text, setText] = useState(() => String(initialValue));
@@ -33,10 +40,10 @@ export function TargetInputControls({
   }
 
   function randomize() {
-    // Matches generateRandomArray's value range - may or may not land in
-    // the current array, which is fine: a target that isn't present is
-    // a real, valid search outcome to visualize, not an error case.
-    const value = MIN_VALUE + Math.floor(Math.random() * RANDOM_MAX);
+    const pickPresentValue = arrayValues.length > 0 && Math.random() < PRESENT_VALUE_CHANCE;
+    const value = pickPresentValue
+      ? arrayValues[Math.floor(Math.random() * arrayValues.length)]
+      : MIN_VALUE + Math.floor(Math.random() * RANDOM_MAX);
     setText(String(value));
     setError(null);
     onChange(value);
