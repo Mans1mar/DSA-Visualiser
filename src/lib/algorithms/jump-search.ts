@@ -9,6 +9,7 @@ import { StepRecorder } from "./step-recorder";
 export const JUMP_SEARCH_SOURCES: LanguageSources = {
   java: [
     "static int jumpSearch(int[] arr, int target) {",
+    "  Arrays.sort(arr); // Jump Search requires a sorted array",
     "  int n = arr.length;",
     "  int step = (int) Math.sqrt(n);",
     "  int prev = 0;",
@@ -27,6 +28,7 @@ export const JUMP_SEARCH_SOURCES: LanguageSources = {
   ],
   cpp: [
     "int jumpSearch(vector<int>& arr, int target) {",
+    "  sort(arr.begin(), arr.end()); // Jump Search requires a sorted array",
     "  int n = arr.size();",
     "  int step = (int) sqrt(n);",
     "  int prev = 0;",
@@ -45,6 +47,7 @@ export const JUMP_SEARCH_SOURCES: LanguageSources = {
   ],
   python: [
     "def jump_search(arr, target):",
+    "    arr.sort()  # Jump Search requires a sorted array",
     "    n = len(arr)",
     "    step = int(n ** 0.5)",
     "    prev = 0",
@@ -66,6 +69,7 @@ export const JUMP_SEARCH_SOURCES: LanguageSources = {
 // Line-for-line pseudocode counterpart to JUMP_SEARCH_SOURCES.
 export const JUMP_SEARCH_PSEUDOCODE = [
   "function jumpSearch(array, target)",
+  "    if array is not sorted, sort it first",
   "    n = length(array)",
   "    step = floor(sqrt(n))",
   "    prev = 0",
@@ -84,26 +88,51 @@ export const JUMP_SEARCH_PSEUDOCODE = [
 ];
 
 /**
- * Requires a sorted array, like Binary Search - always sorted here first
- * regardless of what comes in. Jumps ahead in blocks of sqrt(n),
- * eliminating a whole block at a time (activeRange shrinks coarsely to
- * [prev, n-1] per jump), then linear-scans just the one block that must
- * contain the target, if it's present at all (activeRange narrows
- * further within that block, same as Linear Search's suffix shrinking).
+ * Requires a sorted array, like Binary Search. Rather than silently
+ * sorting behind the scenes, the sort is a real, visible step: the
+ * array is shown in whatever order it arrived in first (matching what
+ * the array input field displays), then an explicit "sort it first"
+ * step shows the transition, and only after that does jumping begin.
+ * activeRange shrinks coarsely to [prev, n-1] per jump, then narrows
+ * within the identified block same as Linear Search's suffix shrinking.
  */
 export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Step[] {
-  const arr = [...input].sort((a, b) => a - b);
-  const n = arr.length;
+  const original = [...input];
+  const n = original.length;
   const rec = new StepRecorder();
 
-  if (n === 0) {
+  rec.record({
+    lineOfCode: 1,
+    description:
+      n === 0
+        ? "Empty array - nothing to search."
+        : `Search for ${target} in an array of n = ${n} elements.`,
+    variables: { n, target },
+    array: original,
+  });
+
+  if (n === 0) return rec.getSteps();
+
+  const isSorted = original.every((value, i) => i === 0 || original[i - 1] <= value);
+
+  if (!isSorted) {
     rec.record({
       lineOfCode: 2,
-      description: "Empty array - nothing to search.",
-      variables: { n },
+      description: "Jump Search needs a sorted array - this one isn't sorted yet.",
+      variables: { n, target },
+      array: original,
+    });
+  }
+
+  const arr = isSorted ? original : [...original].sort((a, b) => a - b);
+
+  if (!isSorted) {
+    rec.record({
+      lineOfCode: 2,
+      description: `Sorted the array: [${arr.join(", ")}].`,
+      variables: { n, target },
       array: arr,
     });
-    return rec.getSteps();
   }
 
   const step = Math.floor(Math.sqrt(n));
@@ -111,8 +140,8 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
   let curr = step;
 
   rec.record({
-    lineOfCode: 3,
-    description: `Search for ${target} in a sorted array of n = ${n} elements, jumping in blocks of ${step}.`,
+    lineOfCode: 4,
+    description: `Jumping ahead in blocks of ${step}.`,
     variables: { n, step, target },
     activeRange: [0, n - 1],
     array: arr,
@@ -121,7 +150,7 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
   while (curr < n && arr[Math.min(curr, n) - 1] < target) {
     const checkIndex = Math.min(curr, n) - 1;
     rec.record({
-      lineOfCode: 6,
+      lineOfCode: 7,
       description: `arr[${checkIndex}] = ${arr[checkIndex]} < ${target}, so the block ending here is too small - jump ahead.`,
       variables: { prev, curr, target },
       pointers: { prev, checkIndex },
@@ -136,7 +165,7 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
 
   const blockEnd = Math.min(curr, n) - 1;
   rec.record({
-    lineOfCode: 10,
+    lineOfCode: 11,
     description: `Target must be in the block [${prev}, ${blockEnd}] (if it's here at all) - scan it left to right.`,
     variables: { prev, blockEnd, target },
     pointers: { prev, blockEnd },
@@ -147,7 +176,7 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
   for (let i = prev; i <= blockEnd; i++) {
     const isMatch = arr[i] === target;
     rec.record({
-      lineOfCode: 11,
+      lineOfCode: 12,
       description: isMatch
         ? `arr[${i}] = ${arr[i]} matches the target!`
         : `arr[${i}] = ${arr[i]} != ${target}, keep scanning the block.`,
@@ -162,7 +191,7 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
     if (isMatch) {
       rec.markFound(i);
       rec.record({
-        lineOfCode: 12,
+        lineOfCode: 13,
         description: `Found ${target} at index ${i}.`,
         variables: { i, target },
         pointers: { i },
@@ -173,7 +202,7 @@ export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Ste
   }
 
   rec.record({
-    lineOfCode: 15,
+    lineOfCode: 16,
     description: `${target} isn't in the array.`,
     variables: { target },
     array: arr,
