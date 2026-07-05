@@ -59,7 +59,12 @@ type BaseAlgorithmMeta = {
 export type ArrayAlgorithmMeta = BaseAlgorithmMeta & {
   kind: "array";
   sampleInput: number[];
-  run: (input: number[]) => Step[];
+  /** Only present for algorithms that search for a specific value
+   * (Linear/Binary/Jump Search) - absent for Sorting, which has no
+   * target. Its presence is what the UI uses to decide whether to show
+   * a target input control at all. */
+  defaultTarget?: number;
+  run: (input: number[], target?: number) => Step[];
 };
 
 export type GraphAlgorithmMeta = BaseAlgorithmMeta & {
@@ -266,7 +271,8 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     sources: LINEAR_SEARCH_SOURCES,
     pseudocode: LINEAR_SEARCH_PSEUDOCODE,
     sampleInput: SEARCH_SAMPLE_INPUT,
-    run: (input) => linearSearch(input, SEARCH_TARGET),
+    defaultTarget: SEARCH_TARGET,
+    run: linearSearch,
   },
   "binary-search": {
     kind: "array",
@@ -297,7 +303,8 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     sources: BINARY_SEARCH_SOURCES,
     pseudocode: BINARY_SEARCH_PSEUDOCODE,
     sampleInput: SEARCH_SAMPLE_INPUT,
-    run: (input) => binarySearch(input, SEARCH_TARGET),
+    defaultTarget: SEARCH_TARGET,
+    run: binarySearch,
   },
   "jump-search": {
     kind: "array",
@@ -328,7 +335,8 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     sources: JUMP_SEARCH_SOURCES,
     pseudocode: JUMP_SEARCH_PSEUDOCODE,
     sampleInput: SEARCH_SAMPLE_INPUT,
-    run: (input) => jumpSearch(input, SEARCH_TARGET),
+    defaultTarget: SEARCH_TARGET,
+    run: jumpSearch,
   },
   bfs: {
     kind: "graph",
@@ -458,20 +466,26 @@ export function getAlgorithmsByCategory(category: Category): AlgorithmMeta[] {
  * callers (the single algorithm page, Comparison Mode) don't each have
  * to re-derive it. Graph runs always start from the first node in the
  * given graph, falling back to the algorithm's declared start node only
- * when using the algorithm's own default graph. */
+ * when using the algorithm's own default graph. `target` is only
+ * meaningful for array-kind search algorithms - Sorting's run()
+ * functions simply don't declare a second parameter, so passing one is
+ * harmless. */
 export function runAlgorithmWithInput(
   algorithm: AlgorithmMeta,
-  input: number[] | Graph
+  input: number[] | Graph,
+  target?: number
 ): Step[] {
   return algorithm.kind === "array"
-    ? algorithm.run(input as number[])
+    ? algorithm.run(input as number[], target)
     : algorithm.run(input as Graph, (input as Graph).nodes[0]?.id ?? algorithm.startNode);
 }
 
-/** Runs an algorithm against its own sample input. */
+/** Runs an algorithm against its own sample input (and default target,
+ * for search algorithms). */
 export function runAlgorithm(algorithm: AlgorithmMeta): Step[] {
   return runAlgorithmWithInput(
     algorithm,
-    algorithm.kind === "array" ? algorithm.sampleInput : algorithm.graph
+    algorithm.kind === "array" ? algorithm.sampleInput : algorithm.graph,
+    algorithm.kind === "array" ? algorithm.defaultTarget : undefined
   );
 }

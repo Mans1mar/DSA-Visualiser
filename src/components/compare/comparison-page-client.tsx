@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrayInputControls } from "@/components/algorithm-page/array-input-controls";
 import { GraphInputControls } from "@/components/algorithm-page/graph-input-controls";
+import { TargetInputControls } from "@/components/algorithm-page/target-input-controls";
 import { PlaybackControls } from "@/components/visualizer/playback-controls";
 import { useComparisonPlayback } from "@/hooks/use-comparison-playback";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
@@ -26,10 +27,10 @@ const DEFAULT_SLUG_B = "quick-sort";
  * (cheap, sub-millisecond) computation just runs a second time there
  * purely to time it.
  */
-function useTimedRun(algorithm: AlgorithmMeta, input: number[] | Graph) {
+function useTimedRun(algorithm: AlgorithmMeta, input: number[] | Graph, target?: number) {
   const steps = useMemo(
-    () => runAlgorithmWithInput(algorithm, input),
-    [algorithm, input]
+    () => runAlgorithmWithInput(algorithm, input, target),
+    [algorithm, input, target]
   );
   const [computeTimeMs, setComputeTimeMs] = useState(0);
 
@@ -39,11 +40,11 @@ function useTimedRun(algorithm: AlgorithmMeta, input: number[] | Graph) {
     // "stop at the end" transition, and for the same lint reason.
     const id = window.setTimeout(() => {
       const start = performance.now();
-      runAlgorithmWithInput(algorithm, input);
+      runAlgorithmWithInput(algorithm, input, target);
       setComputeTimeMs(performance.now() - start);
     }, 0);
     return () => window.clearTimeout(id);
-  }, [algorithm, input]);
+  }, [algorithm, input, target]);
 
   return { steps, computeTimeMs };
 }
@@ -73,31 +74,38 @@ export function ComparisonPageClient() {
   const algorithmB = getAlgorithm(effectiveSlugB)!;
 
   // Input is owned here, shared by both sides - the whole point of
-  // comparing two algorithms is seeing them run on the *same* data, not
+  // comparing two algorithms is seeing them run on the *same* data (and,
+  // for search algorithms, hunting for the *same* target) rather than
   // each on its own independent random input. Reset whenever A's kind
-  // flips (array <-> graph) so a stale array/graph doesn't linger for a
-  // kind it no longer applies to.
+  // flips (array <-> graph) so a stale array/graph/target doesn't linger
+  // for a kind it no longer applies to.
   const [customArray, setCustomArray] = useState<number[] | null>(null);
   const [customGraph, setCustomGraph] = useState<Graph | null>(null);
+  const [customTarget, setCustomTarget] = useState<number | null>(null);
   const [prevKind, setPrevKind] = useState(algorithmA.kind);
   if (algorithmA.kind !== prevKind) {
     setPrevKind(algorithmA.kind);
     setCustomArray(null);
     setCustomGraph(null);
+    setCustomTarget(null);
   }
 
   const activeArrayInput =
     algorithmA.kind === "array" ? (customArray ?? algorithmA.sampleInput) : null;
   const activeGraph = algorithmA.kind === "graph" ? (customGraph ?? algorithmA.graph) : null;
   const activeInput = algorithmA.kind === "array" ? activeArrayInput! : activeGraph!;
+  const activeTarget =
+    algorithmA.kind === "array" ? (customTarget ?? algorithmA.defaultTarget) : undefined;
 
   const { steps: stepsA, computeTimeMs: computeTimeMsA } = useTimedRun(
     algorithmA,
-    activeInput
+    activeInput,
+    activeTarget
   );
   const { steps: stepsB, computeTimeMs: computeTimeMsB } = useTimedRun(
     algorithmB,
-    activeInput
+    activeInput,
+    activeTarget
   );
 
   const playback = useComparisonPlayback(stepsA, stepsB);
@@ -155,6 +163,13 @@ export function ComparisonPageClient() {
         />
       ) : (
         <GraphInputControls initialValue={activeGraph!} onChange={setCustomGraph} />
+      )}
+      {activeTarget !== undefined && (
+        <TargetInputControls
+          key={`${algorithmA.category}-target`}
+          initialValue={activeTarget}
+          onChange={setCustomTarget}
+        />
       )}
 
       <PlaybackControls

@@ -1,5 +1,6 @@
 import type { Step } from "@/types/step";
 import type { LanguageSources } from "./languages";
+import { SEARCH_TARGET } from "./search-shared";
 import { StepRecorder } from "./step-recorder";
 
 // Line-for-line across all three languages (and JUMP_SEARCH_PSEUDOCODE
@@ -90,7 +91,7 @@ export const JUMP_SEARCH_PSEUDOCODE = [
  * contain the target, if it's present at all (activeRange narrows
  * further within that block, same as Linear Search's suffix shrinking).
  */
-export function jumpSearch(input: number[], target: number): Step[] {
+export function jumpSearch(input: number[], target: number = SEARCH_TARGET): Step[] {
   const arr = [...input].sort((a, b) => a - b);
   const n = arr.length;
   const rec = new StepRecorder();

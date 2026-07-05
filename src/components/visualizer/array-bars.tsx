@@ -92,19 +92,23 @@ export function ArrayBars({ step, maxPointerRows }: ArrayBarsProps) {
           const dimmed =
             activeRange !== undefined && (index < activeRange[0] || index > activeRange[1]);
 
-          // swapping/comparing reflect what's happening *right now* and
-          // take priority over found/sorted, persistent already-final
-          // states - which in turn take priority over dimmed, since a
-          // ruled-out range and "the answer" never overlap but it's still
-          // a weaker signal than an explicit final state.
+          // swapping reflects what's happening *right now* and takes
+          // priority over everything. found/sorted are persistent,
+          // already-final states that take priority over comparing -
+          // Binary/Jump Search's own final step sets both `comparing`
+          // (highlighting the index just checked) and `found` (the
+          // target lives there) at once, and the answer should read as
+          // settled, not still mid-comparison. dimmed is the weakest
+          // signal, since a ruled-out range never overlaps found/sorted
+          // anyway but still shouldn't outrank an active comparison.
           const barClass = swapping
             ? "bar-swapping"
-            : comparing
-              ? "bar-comparing"
-              : found
-                ? "bar-found"
-                : sorted
-                  ? "bar-sorted"
+            : found
+              ? "bar-found"
+              : sorted
+                ? "bar-sorted"
+                : comparing
+                  ? "bar-comparing"
                   : dimmed
                     ? "bar-dimmed"
                     : "bar-default";

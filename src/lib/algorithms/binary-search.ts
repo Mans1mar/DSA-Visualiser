@@ -1,5 +1,6 @@
 import type { Step } from "@/types/step";
 import type { LanguageSources } from "./languages";
+import { SEARCH_TARGET } from "./search-shared";
 import { StepRecorder } from "./step-recorder";
 
 // Line-for-line across all three languages (and BINARY_SEARCH_PSEUDOCODE
@@ -86,7 +87,7 @@ export const BINARY_SEARCH_PSEUDOCODE = [
  * whole rest of the array outside it is provably ruled out and dims
  * accordingly.
  */
-export function binarySearch(input: number[], target: number): Step[] {
+export function binarySearch(input: number[], target: number = SEARCH_TARGET): Step[] {
   const arr = [...input].sort((a, b) => a - b);
   const n = arr.length;
   const rec = new StepRecorder();

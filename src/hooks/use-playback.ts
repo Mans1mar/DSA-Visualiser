@@ -21,9 +21,16 @@ export function usePlayback(steps: Step[]) {
     setIsPlaying(false);
   }
 
-  const lastIndex = steps.length - 1;
-  const isAtStart = currentIndex === 0;
-  const isAtEnd = currentIndex >= lastIndex;
+  const lastIndex = Math.max(0, steps.length - 1);
+  // Clamped rather than trusting the render-time reset above to always
+  // land before this is read - same defensive clamp
+  // useComparisonPlayback already applies to indexA/indexB, so a stale
+  // index from a fast burst of input changes (e.g. randomizing or typing
+  // a new array while mid-playback) can never index past the end of a
+  // shorter new steps array.
+  const safeIndex = Math.min(currentIndex, lastIndex);
+  const isAtStart = safeIndex === 0;
+  const isAtEnd = safeIndex >= lastIndex;
 
   const next = useCallback(() => {
     setCurrentIndex((i) => Math.min(i + 1, lastIndex));
@@ -64,8 +71,8 @@ export function usePlayback(steps: Step[]) {
   }, [isPlaying, currentIndex, lastIndex, speed]);
 
   return {
-    currentIndex,
-    currentStep: steps[currentIndex],
+    currentIndex: safeIndex,
+    currentStep: steps[safeIndex],
     totalSteps: steps.length,
     isPlaying,
     isAtStart,

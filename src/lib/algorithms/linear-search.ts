@@ -1,5 +1,6 @@
 import type { Step } from "@/types/step";
 import type { LanguageSources } from "./languages";
+import { SEARCH_TARGET } from "./search-shared";
 import { StepRecorder } from "./step-recorder";
 
 // Line-for-line across all three languages (and LINEAR_SEARCH_PSEUDOCODE
@@ -58,7 +59,7 @@ export const LINEAR_SEARCH_PSEUDOCODE = [
  * keeps the "what's left to check" visual language consistent across
  * all three search algorithms.
  */
-export function linearSearch(input: number[], target: number): Step[] {
+export function linearSearch(input: number[], target: number = SEARCH_TARGET): Step[] {
   const arr = [...input];
   const n = arr.length;
   const rec = new StepRecorder();

@@ -26,27 +26,36 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
 
   // User-editable input, separate per kind. null means "use the
   // algorithm's own default" - randomizing or entering a custom array
-  // (or randomizing the graph) fills these in instead.
+  // (or randomizing the graph), or a custom target for search
+  // algorithms, fills these in instead.
   const [customInput, setCustomInput] = useState<number[] | null>(null);
   const [customGraph, setCustomGraph] = useState<Graph | null>(null);
+  const [customTarget, setCustomTarget] = useState<number | null>(null);
 
   // Reset editable input whenever the algorithm itself changes (a new
   // slug) - render-time "reset state when a prop changes" pattern, so a
-  // custom array/graph never carries over to a different algorithm.
+  // custom array/graph/target never carries over to a different algorithm.
   const [prevAlgorithm, setPrevAlgorithm] = useState(algorithm);
   if (algorithm !== prevAlgorithm) {
     setPrevAlgorithm(algorithm);
     setCustomInput(null);
     setCustomGraph(null);
+    setCustomTarget(null);
   }
 
   const activeArrayInput =
     algorithm.kind === "array" ? (customInput ?? algorithm.sampleInput) : null;
   const activeGraph = algorithm.kind === "graph" ? (customGraph ?? algorithm.graph) : null;
+  const activeTarget =
+    algorithm.kind === "array" ? (customTarget ?? algorithm.defaultTarget) : undefined;
 
   const steps = useMemo(() => {
-    return runAlgorithmWithInput(algorithm, algorithm.kind === "array" ? activeArrayInput! : activeGraph!);
-  }, [algorithm, activeArrayInput, activeGraph]);
+    return runAlgorithmWithInput(
+      algorithm,
+      algorithm.kind === "array" ? activeArrayInput! : activeGraph!,
+      activeTarget
+    );
+  }, [algorithm, activeArrayInput, activeGraph, activeTarget]);
 
   const playback = usePlayback(steps);
 
@@ -75,6 +84,8 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             onArrayInputChange={setCustomInput}
             resetKey={slug}
             legendVariant={algorithm.category === "Searching" ? "searching" : "sorting"}
+            target={activeTarget}
+            onTargetChange={setCustomTarget}
           />
         ) : (
           <GraphVisualizationTab

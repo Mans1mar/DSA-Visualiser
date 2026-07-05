@@ -11,6 +11,7 @@ import {
 import type { Step } from "@/types/step";
 import { ArrayInputControls } from "./array-input-controls";
 import { CodeTab } from "./code-tab";
+import { TargetInputControls } from "./target-input-controls";
 
 type Playback = ReturnType<typeof usePlayback>;
 
@@ -22,6 +23,8 @@ export function VisualizationTab({
   onArrayInputChange,
   resetKey,
   legendVariant = "sorting",
+  target,
+  onTargetChange,
 }: {
   playback: Playback;
   pseudocode: string[];
@@ -30,6 +33,10 @@ export function VisualizationTab({
   onArrayInputChange: (values: number[]) => void;
   resetKey: string;
   legendVariant?: "sorting" | "searching";
+  /** Only search algorithms have a target - undefined for Sorting, which
+   * hides the target input control entirely. */
+  target?: number;
+  onTargetChange?: (target: number) => void;
 }) {
   const {
     currentStep,
@@ -76,6 +83,13 @@ export function VisualizationTab({
           initialValue={arrayInput}
           onChange={onArrayInputChange}
         />
+        {target !== undefined && onTargetChange && (
+          <TargetInputControls
+            key={`${resetKey}-target`}
+            initialValue={target}
+            onChange={onTargetChange}
+          />
+        )}
         <PlaybackControls
           isPlaying={isPlaying}
           isAtStart={isAtStart}
