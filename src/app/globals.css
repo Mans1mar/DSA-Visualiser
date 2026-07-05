@@ -145,6 +145,18 @@
     background-color: color-mix(in oklab, var(--chart-3) 22%, transparent);
     border-color: var(--chart-3);
   }
+  /* search algorithms: a located target (shares "settled/correct" green
+     with sorted, since the two never appear on the same page) and a
+     ruled-out range outside the current search window */
+  .bar-found {
+    background-color: color-mix(in oklab, var(--chart-3) 22%, transparent);
+    border-color: var(--chart-3);
+  }
+  .bar-dimmed {
+    background-color: color-mix(in oklab, var(--chart-1) 6%, transparent);
+    border-color: color-mix(in oklab, var(--chart-1) 35%, transparent);
+    opacity: 0.55;
+  }
 
   /* a named pointer (lo/hi/mid/i/j/k/pivot/...) currently sits on this bar */
   .bar-pointed {

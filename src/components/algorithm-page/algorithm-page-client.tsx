@@ -74,6 +74,7 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             arrayInput={activeArrayInput!}
             onArrayInputChange={setCustomInput}
             resetKey={slug}
+            legendVariant={algorithm.category === "Searching" ? "searching" : "sorting"}
           />
         ) : (
           <GraphVisualizationTab

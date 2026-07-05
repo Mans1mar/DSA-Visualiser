@@ -55,15 +55,17 @@ export function ComparisonPageClient() {
 
   const algorithmA = getAlgorithm(slugA)!;
 
-  // B is restricted to the same kind as A (array vs graph) - they need to
-  // run on the same shape of input to be a meaningful comparison. This is
-  // a pure derivation, not state: if slugB stops matching (e.g. right
-  // after switching A to a different kind), fall back to the first valid
-  // option for *this* render without ever storing that fallback back
-  // into slugB - so if A later returns to a kind where the original
-  // slugB is valid again, it reappears on its own.
+  // B is restricted to the same kind AND category as A - kind so they run
+  // on the same shape of input, category because comparing across them
+  // doesn't line up conceptually (Sorting has no target, Searching has no
+  // "array is sorted" completion state). This is a pure derivation, not
+  // state: if slugB stops matching (e.g. right after switching A to a
+  // different kind/category), fall back to the first valid option for
+  // *this* render without ever storing that fallback back into slugB -
+  // so if A later returns to a kind/category where the original slugB is
+  // valid again, it reappears on its own.
   const optionsB = allAlgorithms.filter(
-    (a) => a.kind === algorithmA.kind && a.slug !== slugA
+    (a) => a.kind === algorithmA.kind && a.category === algorithmA.category && a.slug !== slugA
   );
   const effectiveSlugB = optionsB.some((a) => a.slug === slugB)
     ? slugB
@@ -136,9 +138,21 @@ export function ComparisonPageClient() {
 
       {/* One shared input control for both sides - conditionally array or
           graph shaped based on the selected kind. Different component
-          types in this slot already remount cleanly on kind switches. */}
+          types in this slot already remount cleanly on kind switches.
+          Keyed by category too: Sorting and Searching are both "array"
+          kind but ship different default sample data, so without a key
+          here the text field would keep echoing a stale category's
+          array after switching (the actual run already uses the right
+          one - customArray/activeArrayInput were never wrong - only the
+          displayed text was stale). Within the same category (e.g.
+          Merge Sort -> Quick Sort) no remount happens, so a custom array
+          the user typed still carries over. */}
       {algorithmA.kind === "array" ? (
-        <ArrayInputControls initialValue={activeArrayInput!} onChange={setCustomArray} />
+        <ArrayInputControls
+          key={algorithmA.category}
+          initialValue={activeArrayInput!}
+          onChange={setCustomArray}
+        />
       ) : (
         <GraphInputControls initialValue={activeGraph!} onChange={setCustomGraph} />
       )}

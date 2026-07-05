@@ -7,6 +7,11 @@ export type DataStructureState = {
   array?: number[];
   /** Indices whose final sorted position is locked in and won't change again. */
   sortedIndices?: number[];
+  /** The index where a search algorithm's target was located, once found -
+   * stamped onto every step from that point on (there are usually only
+   * one or two more), the same accumulate-and-persist pattern as
+   * sortedIndices. */
+  foundIndex?: number;
   stack?: unknown[];
   queue?: unknown[];
   priorityQueue?: unknown[];
@@ -45,6 +50,12 @@ export type Step = {
    * draw shallower splits with a longer line and deeper ones
    * progressively shorter, making recursion depth visible at a glance. */
   dividers?: { index: number; depth: number }[];
+  /** [lo, hi] inclusive - the remaining candidate range a search
+   * algorithm is still considering. Everything outside gets dimmed to
+   * show what's already been ruled out. Undefined means nothing is
+   * dimmed (the whole array is still in play, or the search has just
+   * concluded). */
+  activeRange?: [number, number];
   /** Graph node currently being processed (dequeued/popped/recursed into). */
   currentNode?: string;
   /** Graph edge currently being examined/relaxed. */

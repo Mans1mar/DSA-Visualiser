@@ -21,6 +21,7 @@ export function VisualizationTab({
   arrayInput,
   onArrayInputChange,
   resetKey,
+  legendVariant = "sorting",
 }: {
   playback: Playback;
   pseudocode: string[];
@@ -28,6 +29,7 @@ export function VisualizationTab({
   arrayInput: number[];
   onArrayInputChange: (values: number[]) => void;
   resetKey: string;
+  legendVariant?: "sorting" | "searching";
 }) {
   const {
     currentStep,
@@ -65,7 +67,7 @@ export function VisualizationTab({
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       <div className="flex flex-col gap-4">
         <ArrayBars step={currentStep} maxPointerRows={maxPointerRows} />
-        <StateLegend />
+        <StateLegend variant={legendVariant} />
         {/* Keyed by algorithm so its text field resets to the new
             algorithm's default array instead of showing a stale value -
             "Randomize"/"Set array" already keep it in sync themselves. */}

@@ -49,7 +49,11 @@ export function ComparisonSideInfo({
       ) : (
         <GraphView graph={graph!} step={currentStep} />
       )}
-      {algorithm.kind === "array" ? <StateLegend /> : <GraphStateLegend />}
+      {algorithm.kind === "array" ? (
+        <StateLegend variant={algorithm.category === "Searching" ? "searching" : "sorting"} />
+      ) : (
+        <GraphStateLegend />
+      )}
 
       <div className="space-y-1">
         <p className="h-[60px] text-sm leading-5 text-foreground">

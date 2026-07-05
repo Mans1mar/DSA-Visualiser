@@ -22,6 +22,7 @@ export class StepRecorder {
   private callStack: CallStackFrame[] = [];
   private sortedIndices = new Set<number>();
   private dividerFrames: number[][] = [];
+  private foundIndex: number | undefined;
 
   pushCall(frame: CallStackFrame) {
     this.callStack.push(frame);
@@ -37,6 +38,13 @@ export class StepRecorder {
 
   markAllSorted(length: number) {
     for (let i = 0; i < length; i++) this.sortedIndices.add(i);
+  }
+
+  /** Search algorithms call this once the target is located - like
+   * markSorted, it persists onto every subsequent record() automatically
+   * (there are usually only one or two more before the run ends). */
+  markFound(index: number) {
+    this.foundIndex = index;
   }
 
   /**
@@ -82,6 +90,7 @@ export class StepRecorder {
         array: [...array],
         callStack: this.callStack.map((frame) => ({ ...frame })),
         sortedIndices: [...this.sortedIndices].sort((a, b) => a - b),
+        foundIndex: this.foundIndex,
       },
     });
   }

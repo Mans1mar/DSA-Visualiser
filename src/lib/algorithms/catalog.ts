@@ -1,22 +1,26 @@
+import { BFS_SOURCES, BFS_PSEUDOCODE, bfs } from "./bfs";
+import { BINARY_SEARCH_SOURCES, BINARY_SEARCH_PSEUDOCODE, binarySearch } from "./binary-search";
 import { BUBBLE_SORT_SOURCES, BUBBLE_SORT_PSEUDOCODE, bubbleSort } from "./bubble-sort";
+import { DFS_SOURCES, DFS_PSEUDOCODE, dfs } from "./dfs";
+import { DIJKSTRA_SOURCES, DIJKSTRA_PSEUDOCODE, dijkstra } from "./dijkstra";
 import {
   INSERTION_SORT_SOURCES,
   INSERTION_SORT_PSEUDOCODE,
   insertionSort,
 } from "./insertion-sort";
+import { JUMP_SEARCH_SOURCES, JUMP_SEARCH_PSEUDOCODE, jumpSearch } from "./jump-search";
+import type { LanguageSources } from "./languages";
+import { LINEAR_SEARCH_SOURCES, LINEAR_SEARCH_PSEUDOCODE, linearSearch } from "./linear-search";
 import { MERGE_SORT_SOURCES, MERGE_SORT_PSEUDOCODE, mergeSort } from "./merge-sort";
 import { QUICK_SORT_SOURCES, QUICK_SORT_PSEUDOCODE, quickSort } from "./quick-sort";
+import { SEARCH_SAMPLE_INPUT, SEARCH_TARGET } from "./search-shared";
 import {
   SELECTION_SORT_SOURCES,
   SELECTION_SORT_PSEUDOCODE,
   selectionSort,
 } from "./selection-sort";
-import { BFS_SOURCES, BFS_PSEUDOCODE, bfs } from "./bfs";
-import { DFS_SOURCES, DFS_PSEUDOCODE, dfs } from "./dfs";
-import { DIJKSTRA_SOURCES, DIJKSTRA_PSEUDOCODE, dijkstra } from "./dijkstra";
 import { SAMPLE_GRAPH, SAMPLE_GRAPH_START } from "@/lib/graph/sample-graph";
 import type { Graph } from "@/lib/graph/types";
-import type { LanguageSources } from "./languages";
 import type { Step } from "@/types/step";
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -233,6 +237,99 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     sampleInput: SAMPLE_INPUT,
     run: insertionSort,
   },
+  "linear-search": {
+    kind: "array",
+    slug: "linear-search",
+    name: "Linear Search",
+    category: "Searching",
+    difficulty: "Easy",
+    shortDescription: "Checks every element left to right until the target turns up.",
+    timeComplexity: { best: "O(1)", average: "O(n)", worst: "O(n)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Linear Search checks each element in order, starting from the first, until it finds one equal to the target or runs out of elements to check.",
+      whenToUse:
+        "When the data isn't sorted and sorting it first isn't worth the cost for a single lookup, or the array is small enough that its simplicity outweighs the speed of a smarter search.",
+      pros: [
+        "Works on any array - no sorted-input requirement, unlike Binary or Jump Search",
+        "Extremely simple to understand and implement",
+        "No setup cost - nothing to prepare before the first search",
+      ],
+      cons: [
+        "O(n) worst case - checks every element if the target is absent or last",
+        "Doesn't take advantage of sorted data at all, unlike Binary or Jump Search",
+      ],
+    },
+    complexityComparison:
+      "Binary Search finds the same target in O(log n) and Jump Search in O(√n), both far faster than Linear Search's O(n) - but only because they require the array to already be sorted, a cost Linear Search never has to pay.",
+    sources: LINEAR_SEARCH_SOURCES,
+    pseudocode: LINEAR_SEARCH_PSEUDOCODE,
+    sampleInput: SEARCH_SAMPLE_INPUT,
+    run: (input) => linearSearch(input, SEARCH_TARGET),
+  },
+  "binary-search": {
+    kind: "array",
+    slug: "binary-search",
+    name: "Binary Search",
+    category: "Searching",
+    difficulty: "Easy",
+    shortDescription: "Repeatedly halves a sorted array's search range around its midpoint.",
+    timeComplexity: { best: "O(1)", average: "O(log n)", worst: "O(log n)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Binary Search checks the middle element of the current search range against the target. If they match, it's done; otherwise it discards the half that can't contain the target and repeats on the remaining half, until the range is empty.",
+      whenToUse:
+        "When searching a sorted array (or one you can afford to sort once and search many times) - the classic choice whenever O(log n) lookups matter, such as searching a large sorted dataset or an index.",
+      pros: [
+        "O(log n) time - scales extremely well to large arrays",
+        "Simple, well-understood, and easy to get right iteratively",
+        "No extra memory beyond a couple of index variables",
+      ],
+      cons: [
+        "Requires the array to already be sorted - sorting first costs O(n log n) if it isn't",
+        "Random access only - awkward on data structures like linked lists that can't jump to an index in O(1)",
+      ],
+    },
+    complexityComparison:
+      "Jump Search trades Binary Search's O(log n) for a slower O(√n) in exchange for needing only backward jumps by a fixed block size instead of arbitrary random access - a better fit when jumping is cheap but jumping to an arbitrary index isn't. Linear Search needs no sorted precondition at all, at the cost of O(n) instead of O(log n).",
+    sources: BINARY_SEARCH_SOURCES,
+    pseudocode: BINARY_SEARCH_PSEUDOCODE,
+    sampleInput: SEARCH_SAMPLE_INPUT,
+    run: (input) => binarySearch(input, SEARCH_TARGET),
+  },
+  "jump-search": {
+    kind: "array",
+    slug: "jump-search",
+    name: "Jump Search",
+    category: "Searching",
+    difficulty: "Medium",
+    shortDescription: "Jumps ahead in fixed-size blocks, then scans the block that must contain it.",
+    timeComplexity: { best: "O(1)", average: "O(√n)", worst: "O(√n)" },
+    spaceComplexity: "O(1)",
+    overview: {
+      whatItDoes:
+        "Jump Search checks the last element of successive fixed-size blocks (of size √n) until it finds a block whose end is at least the target, then linearly scans just that one block for the target - never scanning more than one block plus one jump's worth of overshoot.",
+      whenToUse:
+        "On sorted data where jumping backward by a fixed step is cheap but random access to an arbitrary index (which Binary Search needs) is expensive or impossible - for example, sorted data on a slow-seek storage medium.",
+      pros: [
+        "O(√n) time - much better than Linear Search's O(n) on large arrays",
+        "Only ever needs to jump forward by a fixed block size, not to an arbitrary index",
+        "Simple to implement - no recursion, just a jump loop and a linear scan",
+      ],
+      cons: [
+        "Requires the array to already be sorted, same as Binary Search",
+        "Slower than Binary Search's O(log n) whenever arbitrary random access is actually available",
+      ],
+    },
+    complexityComparison:
+      "Binary Search beats Jump Search's O(√n) with O(log n), but needs arbitrary random access to the middle of any range - Jump Search only ever needs to jump ahead by a fixed block size. Linear Search needs no sorted precondition at all, at the cost of O(n).",
+    sources: JUMP_SEARCH_SOURCES,
+    pseudocode: JUMP_SEARCH_PSEUDOCODE,
+    sampleInput: SEARCH_SAMPLE_INPUT,
+    run: (input) => jumpSearch(input, SEARCH_TARGET),
+  },
   bfs: {
     kind: "graph",
     slug: "bfs",
@@ -339,8 +436,8 @@ export function getAlgorithm(slug: string): AlgorithmMeta | undefined {
   return ALGORITHM_CATALOG[slug];
 }
 
-/** Homepage category order. Tree and Searching stay "coming soon" for the
- * whole MVP; Graph now has BFS/DFS/Dijkstra. */
+/** Homepage category order. Tree stays "coming soon" for the whole MVP;
+ * Graph has BFS/DFS/Dijkstra, Searching has Linear/Binary/Jump Search. */
 export const CATEGORY_ORDER: Category[] = ["Sorting", "Graph", "Tree", "Searching"];
 
 export function getAllAlgorithms(): AlgorithmMeta[] {

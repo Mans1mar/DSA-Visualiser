@@ -58,6 +58,8 @@ function pointersByIndex(pointers: Record<string, number> | undefined, length: n
 export function ArrayBars({ step, maxPointerRows }: ArrayBarsProps) {
   const array = step.dataStructureState?.array ?? [];
   const sortedIndices = step.dataStructureState?.sortedIndices;
+  const foundIndex = step.dataStructureState?.foundIndex;
+  const activeRange = step.activeRange;
   const max = Math.max(1, ...array);
   const dividerDepths = new Map((step.dividers ?? []).map((d) => [d.index, d.depth]));
   const cells = buildCells(array.length, dividerDepths);
@@ -86,16 +88,26 @@ export function ArrayBars({ step, maxPointerRows }: ArrayBarsProps) {
           const comparing = isInPair(step.comparing, index);
           const swapping = isInPair(step.swapping, index);
           const sorted = sortedIndices?.includes(index) ?? false;
+          const found = foundIndex === index;
+          const dimmed =
+            activeRange !== undefined && (index < activeRange[0] || index > activeRange[1]);
 
           // swapping/comparing reflect what's happening *right now* and
-          // take priority over sorted, a persistent, already-final state.
+          // take priority over found/sorted, persistent already-final
+          // states - which in turn take priority over dimmed, since a
+          // ruled-out range and "the answer" never overlap but it's still
+          // a weaker signal than an explicit final state.
           const barClass = swapping
             ? "bar-swapping"
             : comparing
               ? "bar-comparing"
-              : sorted
-                ? "bar-sorted"
-                : "bar-default";
+              : found
+                ? "bar-found"
+                : sorted
+                  ? "bar-sorted"
+                  : dimmed
+                    ? "bar-dimmed"
+                    : "bar-default";
 
           return (
             <div
