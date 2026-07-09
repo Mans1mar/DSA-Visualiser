@@ -61,6 +61,7 @@ export function ComparisonSideInfo({
           step={currentStep}
           reservedWidth={reservedTreeWidth}
           reservedHeight={reservedTreeHeight}
+          showBalanceFactor={algorithm.slug.startsWith("avl-")}
         />
       ) : (
         <GraphView graph={graph!} step={currentStep} />

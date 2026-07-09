@@ -1,3 +1,6 @@
+import { AVL_DELETE_SOURCES, AVL_DELETE_PSEUDOCODE, avlDelete } from "./avl-delete";
+import { AVL_INSERT_SOURCES, AVL_INSERT_PSEUDOCODE, avlInsert } from "./avl-insert";
+import { AVL_SAMPLE_VALUES, AVL_DELETE_TARGET } from "./avl-shared";
 import { BFS_SOURCES, BFS_PSEUDOCODE, bfs } from "./bfs";
 import { BINARY_SEARCH_SOURCES, BINARY_SEARCH_PSEUDOCODE, binarySearch } from "./binary-search";
 import { BST_DELETE_SOURCES, BST_DELETE_PSEUDOCODE, bstDelete } from "./bst-delete";
@@ -686,6 +689,69 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     pseudocode: BST_LEVELORDER_PSEUDOCODE,
     sampleValues: TREE_SAMPLE_VALUES,
     run: bstLevelOrder,
+  },
+  "avl-insert": {
+    kind: "tree",
+    slug: "avl-insert",
+    name: "AVL Insert",
+    category: "Tree",
+    difficulty: "Medium",
+    shortDescription: "BST insert, plus a self-balancing check: rotate whenever an ancestor's balance factor slips outside [-1, 1].",
+    timeComplexity: { best: "O(log n)", average: "O(log n)", worst: "O(log n)" },
+    spaceComplexity: "O(log n)",
+    overview: {
+      whatItDoes:
+        "AVL Insert walks down and attaches the new value exactly like BST Insert, then - unlike BST Insert - walks back up checking every ancestor's balance factor (height of its left subtree minus height of its right subtree). The moment one falls outside [-1, 1], a rotation (single or double, depending on which side is heavy) restores it, and since inserting one value can only ever unbalance one spot at a time, a single rotation is always enough to fix the whole tree.",
+      whenToUse:
+        "Whenever a worst-case O(log n) guarantee actually matters - a plain BST degrades to O(n) on sorted or adversarial input, which AVL's rebalancing prevents by construction. Reach for it over a plain BST whenever lookups need to stay fast no matter what order data arrives in.",
+      pros: [
+        "Guaranteed O(log n) height, and therefore O(log n) insert/search/delete, in every case - not just on average",
+        "Strictly balanced (height difference at most 1 at every node) - the tightest balance guarantee among common self-balancing trees",
+        "At most one rotation is ever needed per insert, so rebalancing itself is cheap",
+      ],
+      cons: [
+        "More bookkeeping than a plain BST insert - every ancestor on the way back up needs its balance factor rechecked",
+        "Slightly more rotations in practice than a looser structure like a red-black tree, which trades some balance strictness for fewer rotations on average",
+      ],
+    },
+    complexityComparison:
+      "BST Insert is simpler and just as fast on average (O(log n)), but degrades to O(n) on unlucky input order since nothing corrects an unbalanced shape - AVL Insert spends a little extra work on every insert specifically to prevent that. AVL Delete shares the exact same rebalancing idea, but a deletion can require rotations at more than one ancestor level, unlike insert's guaranteed single rotation.",
+    sources: AVL_INSERT_SOURCES,
+    pseudocode: AVL_INSERT_PSEUDOCODE,
+    sampleValues: AVL_SAMPLE_VALUES,
+    run: avlInsert,
+  },
+  "avl-delete": {
+    kind: "tree",
+    slug: "avl-delete",
+    name: "AVL Delete",
+    category: "Tree",
+    difficulty: "Hard",
+    shortDescription: "BST delete's three cases, plus rebalancing every ancestor on the way back up - possibly more than once.",
+    timeComplexity: { best: "O(log n)", average: "O(log n)", worst: "O(log n)" },
+    spaceComplexity: "O(log n)",
+    overview: {
+      whatItDoes:
+        "AVL Delete locates and removes the node exactly like BST Delete (splice in a child, or copy in the inorder successor for a two-children node), then walks back up the same way AVL Insert does - rechecking every ancestor's balance factor and rotating whenever one falls outside [-1, 1]. The key difference from insert: removing a node can shrink a subtree's height in a way that unbalances multiple ancestors at once, so unlike insert's guaranteed single fix, a single deletion can trigger a rotation at more than one level on the way up.",
+      whenToUse:
+        "Anywhere AVL Insert is the right call and the data also needs removal - a dynamic ordered collection that must keep guaranteed O(log n) operations no matter how many insertions and deletions it's already been through.",
+      pros: [
+        "Guaranteed O(log n) height maintained after removal too, not just after insertion",
+        "Reuses BST Delete's exact three removal cases - nothing new to learn there, just an added rebalancing pass",
+        "Keeps the tightest balance guarantee among common self-balancing trees even as nodes come and go",
+      ],
+      cons: [
+        "The most involved algorithm here - BST Delete's three cases combined with AVL Insert's rebalancing, and unlike insert, rebalancing isn't guaranteed to stop after one rotation",
+        "More rotations over the lifetime of a tree that sees frequent deletions than a looser-balanced structure would need",
+      ],
+    },
+    complexityComparison:
+      "AVL Delete starts with the exact same three removal cases as BST Delete, so the two share that part completely - the difference is entirely the rebalancing pass afterward, the same mechanism AVL Insert uses. Unlike AVL Insert, which only ever needs one rotation to fully restore balance, a single AVL Delete can require rotations at several ancestor levels on the way back up, since shrinking a subtree can uncover imbalance further up the tree that a single fix doesn't resolve.",
+    sources: AVL_DELETE_SOURCES,
+    pseudocode: AVL_DELETE_PSEUDOCODE,
+    sampleValues: AVL_SAMPLE_VALUES,
+    defaultTarget: AVL_DELETE_TARGET,
+    run: avlDelete,
   },
 };
 

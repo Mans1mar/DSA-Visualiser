@@ -104,9 +104,18 @@ export function ComparisonPageClient() {
       : algorithmA.kind === "tree"
         ? activeValues!
         : activeGraph!;
+  // Checked on BOTH sides, not just A: within "Tree", Insert/Traversals
+  // have no defaultTarget but Search/Delete do, so a pairing like AVL
+  // Insert (A) vs AVL Delete (B) still needs the target control shown -
+  // deriving this from A alone would silently hide it whenever A
+  // happens to be the side that doesn't use one.
+  const targetCapableA =
+    algorithmA.kind === "array" || algorithmA.kind === "tree" ? algorithmA.defaultTarget : undefined;
+  const targetCapableB =
+    algorithmB.kind === "array" || algorithmB.kind === "tree" ? algorithmB.defaultTarget : undefined;
   const activeTarget =
-    algorithmA.kind === "array" || algorithmA.kind === "tree"
-      ? (customTarget ?? algorithmA.defaultTarget)
+    targetCapableA !== undefined || targetCapableB !== undefined
+      ? (customTarget ?? targetCapableA ?? targetCapableB)
       : undefined;
 
   const { steps: stepsA, computeTimeMs: computeTimeMsA } = useTimedRun(

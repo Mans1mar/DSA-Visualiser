@@ -28,6 +28,7 @@ export function TreeVisualizationTab({
   legendVariant = "default",
   target,
   onTargetChange,
+  showBalanceFactor = false,
 }: {
   playback: Playback;
   pseudocode: string[];
@@ -42,6 +43,8 @@ export function TreeVisualizationTab({
    * the four traversals, which hides the target input control entirely. */
   target?: number;
   onTargetChange?: (target: number) => void;
+  /** AVL only - see TreeView's own doc comment. */
+  showBalanceFactor?: boolean;
 }) {
   const {
     currentStep,
@@ -87,7 +90,12 @@ export function TreeVisualizationTab({
       )}
     >
       <div className="flex flex-col gap-4">
-        <TreeView step={currentStep} reservedWidth={reservedWidth} reservedHeight={reservedHeight} />
+        <TreeView
+          step={currentStep}
+          reservedWidth={reservedWidth}
+          reservedHeight={reservedHeight}
+          showBalanceFactor={showBalanceFactor}
+        />
         <TreeStateLegend variant={legendVariant} />
         {/* Keyed by algorithm so its text field resets to the new
             algorithm's default insert sequence instead of showing a

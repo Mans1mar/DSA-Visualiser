@@ -109,6 +109,7 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             legendVariant={treeLegendVariant(slug)}
             target={activeTarget}
             onTargetChange={setCustomTarget}
+            showBalanceFactor={slug.startsWith("avl-")}
           />
         ) : (
           <GraphVisualizationTab

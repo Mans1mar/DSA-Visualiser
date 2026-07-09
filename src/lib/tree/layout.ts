@@ -5,6 +5,14 @@ export type PositionedTreeNode = {
   value: number;
   x: number;
   y: number;
+  /** Height of the subtree rooted here - empty is 0, a leaf is 1 - same
+   * convention AVL's own balance-factor math uses, so a badge computed
+   * from this (left.subtreeHeight - right.subtreeHeight) always matches
+   * the number the algorithm itself is reasoning about. Computed for
+   * every tree (not just AVL's), since it's a byproduct of the layout
+   * walk that already visits every node - callers just choose whether
+   * to display it. */
+  subtreeHeight: number;
   left: PositionedTreeNode | null;
   right: PositionedTreeNode | null;
 };
@@ -39,7 +47,8 @@ export function layoutTree(root: TreeNode | null): TreeLayout {
     const x = counter * H_SPACING;
     counter += 1;
     const right = assign(node.right, depth + 1);
-    return { id: node.id, value: node.value, x, y: depth * V_SPACING, left, right };
+    const subtreeHeight = 1 + Math.max(left?.subtreeHeight ?? 0, right?.subtreeHeight ?? 0);
+    return { id: node.id, value: node.value, x, y: depth * V_SPACING, subtreeHeight, left, right };
   }
 
   const positioned = assign(root, 0);

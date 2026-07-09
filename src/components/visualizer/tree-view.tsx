@@ -1,8 +1,10 @@
 import { flattenTree, layoutTree } from "@/lib/tree/layout";
+import { cn } from "@/lib/utils";
 import type { Step } from "@/types/step";
 
 const NODE_RADIUS = 20;
 const PADDING = 32;
+const BALANCE_BADGE_RADIUS = 9;
 
 type TreeViewProps = {
   step: Step;
@@ -16,9 +18,20 @@ type TreeViewProps = {
    * that only ever show one static tree, or haven't computed this yet. */
   reservedWidth?: number;
   reservedHeight?: number;
+  /** AVL only - shows each node's balance factor as a small badge,
+   * computed from the same height convention (empty subtree = 0, a leaf
+   * = 1) AVL's own rotation logic uses, so the displayed number always
+   * matches what the algorithm is reasoning about. Off by default so
+   * BST's rendering (already shipped) is unaffected. */
+  showBalanceFactor?: boolean;
 };
 
-export function TreeView({ step, reservedWidth = 0, reservedHeight = 0 }: TreeViewProps) {
+export function TreeView({
+  step,
+  reservedWidth = 0,
+  reservedHeight = 0,
+  showBalanceFactor = false,
+}: TreeViewProps) {
   const tree = step.dataStructureState?.tree ?? null;
   const { root, width, height } = layoutTree(tree);
 
@@ -82,6 +95,9 @@ export function TreeView({ step, reservedWidth = 0, reservedHeight = 0 }: TreeVi
               : isVisited
                 ? "node-visited"
                 : "node-default";
+          const balanceFactor = (node.left?.subtreeHeight ?? 0) - (node.right?.subtreeHeight ?? 0);
+          const badgeX = node.x + NODE_RADIUS * 0.75;
+          const badgeY = node.y - NODE_RADIUS * 0.75;
 
           return (
             <g key={node.id} className="transition-all duration-300">
@@ -100,6 +116,28 @@ export function TreeView({ step, reservedWidth = 0, reservedHeight = 0 }: TreeVi
               >
                 {node.value}
               </text>
+              {showBalanceFactor && (
+                <>
+                  <circle
+                    cx={badgeX}
+                    cy={badgeY}
+                    r={BALANCE_BADGE_RADIUS}
+                    className="fill-background stroke-muted-foreground/40"
+                    strokeWidth={1}
+                  />
+                  <text
+                    x={badgeX}
+                    y={badgeY + 3}
+                    textAnchor="middle"
+                    className={cn(
+                      "text-[9px] font-bold select-none",
+                      Math.abs(balanceFactor) > 1 ? "fill-destructive" : "fill-muted-foreground"
+                    )}
+                  >
+                    {balanceFactor > 0 ? `+${balanceFactor}` : balanceFactor}
+                  </text>
+                </>
+              )}
             </g>
           );
         })}
