@@ -1,36 +1,47 @@
 import { useMemo } from "react";
 import { CallStackPanel } from "@/components/visualizer/call-stack-panel";
-import { GraphStateLegend } from "@/components/visualizer/graph-state-legend";
-import { GraphView } from "@/components/visualizer/graph-view";
 import { LinearStatePanel } from "@/components/visualizer/linear-state-panel";
 import { PlaybackControls } from "@/components/visualizer/playback-controls";
+import { TreeStateLegend } from "@/components/visualizer/tree-state-legend";
+import { TreeView } from "@/components/visualizer/tree-view";
 import type { usePlayback } from "@/hooks/use-playback";
-import type { Graph } from "@/lib/graph/types";
 import {
   computeMaxCallStackDepth,
   computeMaxLinearItems,
+  computeMaxTreeExtent,
 } from "@/lib/visualizer/layout-stability";
 import { cn } from "@/lib/utils";
 import type { Step } from "@/types/step";
+import { ArrayInputControls } from "./array-input-controls";
 import { CodeTab } from "./code-tab";
-import { GraphInputControls } from "./graph-input-controls";
+import { TargetInputControls } from "./target-input-controls";
 
 type Playback = ReturnType<typeof usePlayback>;
 
-export function GraphVisualizationTab({
-  graph,
+export function TreeVisualizationTab({
   playback,
   pseudocode,
   steps,
-  onGraphChange,
+  values,
+  onValuesChange,
   resetKey,
+  legendVariant = "default",
+  target,
+  onTargetChange,
 }: {
-  graph: Graph;
   playback: Playback;
   pseudocode: string[];
   steps: Step[];
-  onGraphChange: (graph: Graph) => void;
+  /** The insert sequence that builds the starting tree - editable the
+   * same way an array algorithm's input is, via ArrayInputControls. */
+  values: number[];
+  onValuesChange: (values: number[]) => void;
   resetKey: string;
+  legendVariant?: "default" | "search" | "traversal";
+  /** Only Search and Delete have a target - undefined for Insert and
+   * the four traversals, which hides the target input control entirely. */
+  target?: number;
+  onTargetChange?: (target: number) => void;
 }) {
   const {
     currentStep,
@@ -47,24 +58,24 @@ export function GraphVisualizationTab({
     reset,
   } = playback;
 
-  const maxCallStackDepth = useMemo(() => computeMaxCallStackDepth(steps), [steps]);
-  const maxQueueItems = useMemo(() => computeMaxLinearItems(steps, "queue"), [steps]);
-  const maxPQItems = useMemo(
-    () => computeMaxLinearItems(steps, "priorityQueue"),
+  const { width: reservedWidth, height: reservedHeight } = useMemo(
+    () => computeMaxTreeExtent(steps),
     [steps]
   );
-  // BFS populates a queue, Dijkstra a priority queue, DFS a call stack
-  // (via its recursion) - every graph algorithm here uses at least one,
-  // but the check stays generic rather than assuming all three always apply.
-  const hasAuxPanel = maxCallStackDepth > 0 || maxQueueItems > 0 || maxPQItems > 0;
+  const maxCallStackDepth = useMemo(() => computeMaxCallStackDepth(steps), [steps]);
+  const maxQueueItems = useMemo(() => computeMaxLinearItems(steps, "queue"), [steps]);
+  // Level-order populates a queue, Insert/Search/Delete/the three
+  // recursive traversals populate a call stack - every Tree algorithm
+  // uses one or the other, but the check stays generic rather than
+  // assuming both always apply.
+  const hasAuxPanel = maxCallStackDepth > 0 || maxQueueItems > 0;
 
   return (
-    // Visual + controls stay adjacent in their own column so play/step/
-    // reset never require scrolling away from what's on screen. Pseudocode
-    // and the queue/stack panels are separate columns (not stacked) so
-    // they're visible on screen at the same time as the code driving them,
-    // without scrolling. grid-cols-1 matters even below lg - see
-    // visualization-tab.tsx for why.
+    // Same layout shape as VisualizationTab/GraphVisualizationTab -
+    // pseudocode and the queue/stack panel are separate columns (not
+    // stacked) so the stack is visible on screen at the same time as
+    // the code driving it, without scrolling. See visualization-tab.tsx
+    // for why grid-cols-1 matters even below lg.
     <div
       className={cn(
         "grid grid-cols-1 items-start gap-6",
@@ -76,11 +87,20 @@ export function GraphVisualizationTab({
       )}
     >
       <div className="flex flex-col gap-4">
-        <GraphView graph={graph} step={currentStep} />
-        <GraphStateLegend />
-        {/* Keyed by algorithm so it re-syncs to the new algorithm's
-            default graph instead of showing a stale edge list. */}
-        <GraphInputControls key={resetKey} initialValue={graph} onChange={onGraphChange} />
+        <TreeView step={currentStep} reservedWidth={reservedWidth} reservedHeight={reservedHeight} />
+        <TreeStateLegend variant={legendVariant} />
+        {/* Keyed by algorithm so its text field resets to the new
+            algorithm's default insert sequence instead of showing a
+            stale value. */}
+        <ArrayInputControls key={resetKey} initialValue={values} onChange={onValuesChange} />
+        {target !== undefined && onTargetChange && (
+          <TargetInputControls
+            key={`${resetKey}-target`}
+            initialValue={target}
+            arrayValues={values}
+            onChange={onTargetChange}
+          />
+        )}
         <PlaybackControls
           isPlaying={isPlaying}
           isAtStart={isAtStart}
@@ -105,9 +125,6 @@ export function GraphVisualizationTab({
         </div>
 
         <div className="space-y-1">
-          {/* Fixed height (not min-height) reserved for 3 lines - a floor
-              alone still lets the "Step" line below shift by however much
-              a longer/shorter description wraps differently step to step. */}
           <p className="h-[60px] text-sm leading-5 text-foreground">
             {currentStep.description}
           </p>
@@ -120,17 +137,12 @@ export function GraphVisualizationTab({
       {hasAuxPanel && (
         <div className="flex flex-col gap-4">
           {/* Only whichever of these an algorithm actually populates
-              renders - BFS shows Queue, Dijkstra shows Priority queue,
-              DFS shows the call stack via its recursion. */}
+              renders - Level-order shows Queue, Insert/Search/Delete/the
+              recursive traversals show the call stack. */}
           <LinearStatePanel
             label="Queue"
             items={currentStep.dataStructureState?.queue ?? []}
             maxItems={maxQueueItems}
-          />
-          <LinearStatePanel
-            label="Priority queue"
-            items={currentStep.dataStructureState?.priorityQueue ?? []}
-            maxItems={maxPQItems}
           />
           <CallStackPanel
             callStack={currentStep.dataStructureState?.callStack ?? []}

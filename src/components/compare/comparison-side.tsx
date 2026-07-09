@@ -3,6 +3,8 @@ import { ArrayBars } from "@/components/visualizer/array-bars";
 import { GraphStateLegend } from "@/components/visualizer/graph-state-legend";
 import { GraphView } from "@/components/visualizer/graph-view";
 import { StateLegend } from "@/components/visualizer/state-legend";
+import { TreeStateLegend, treeLegendVariant } from "@/components/visualizer/tree-state-legend";
+import { TreeView } from "@/components/visualizer/tree-view";
 import type { AlgorithmMeta } from "@/lib/algorithms/catalog";
 import type { Graph } from "@/lib/graph/types";
 import { computeRunningStats } from "@/lib/visualizer/comparison-stats";
@@ -30,6 +32,12 @@ type ComparisonSideInfoProps = {
    * would each reserve a different amount of pointer-row space and
    * everything below the bars would end up at different heights. */
   maxPointerRows: number;
+  /** Tree-only, same sharing reasoning as maxPointerRows - computed by
+   * the caller via computeMaxTreeExtent across both sides' steps so an
+   * Insert (which grows) and a Traversal (fixed size) reserve the same
+   * canvas instead of resizing independently. */
+  reservedTreeWidth?: number;
+  reservedTreeHeight?: number;
 };
 
 export function ComparisonSideInfo({
@@ -39,6 +47,8 @@ export function ComparisonSideInfo({
   currentIndex,
   totalSteps,
   maxPointerRows,
+  reservedTreeWidth,
+  reservedTreeHeight,
 }: ComparisonSideInfoProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -46,11 +56,19 @@ export function ComparisonSideInfo({
 
       {algorithm.kind === "array" ? (
         <ArrayBars step={currentStep} maxPointerRows={maxPointerRows} />
+      ) : algorithm.kind === "tree" ? (
+        <TreeView
+          step={currentStep}
+          reservedWidth={reservedTreeWidth}
+          reservedHeight={reservedTreeHeight}
+        />
       ) : (
         <GraphView graph={graph!} step={currentStep} />
       )}
       {algorithm.kind === "array" ? (
         <StateLegend variant={algorithm.category === "Searching" ? "searching" : "sorting"} />
+      ) : algorithm.kind === "tree" ? (
+        <TreeStateLegend variant={treeLegendVariant(algorithm.slug)} />
       ) : (
         <GraphStateLegend />
       )}

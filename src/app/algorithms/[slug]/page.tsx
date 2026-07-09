@@ -20,7 +20,7 @@ export default async function AlgorithmPage(
   if (!algorithm) notFound();
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12">
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 py-12 pr-6 pl-8">
       <AlgorithmHeader algorithm={algorithm} />
       <AlgorithmPageClient slug={slug} />
     </div>

@@ -196,6 +196,13 @@
     fill: color-mix(in oklab, var(--chart-3) 25%, white);
     stroke: var(--chart-3);
   }
+  /* Tree Search's located node - same "settled/correct" chart-3 as
+     node-visited, matching bar-found/bar-sorted's precedent, since
+     Search (found) and Traversals (visited) never share a page. */
+  .node-found {
+    fill: color-mix(in oklab, var(--chart-3) 25%, white);
+    stroke: var(--chart-3);
+  }
 
   .edge-default {
     stroke: var(--border);

@@ -1,5 +1,16 @@
 import { BFS_SOURCES, BFS_PSEUDOCODE, bfs } from "./bfs";
 import { BINARY_SEARCH_SOURCES, BINARY_SEARCH_PSEUDOCODE, binarySearch } from "./binary-search";
+import { BST_DELETE_SOURCES, BST_DELETE_PSEUDOCODE, bstDelete } from "./bst-delete";
+import { BST_INORDER_SOURCES, BST_INORDER_PSEUDOCODE, bstInorder } from "./bst-inorder";
+import { BST_INSERT_SOURCES, BST_INSERT_PSEUDOCODE, bstInsert } from "./bst-insert";
+import {
+  BST_LEVELORDER_SOURCES,
+  BST_LEVELORDER_PSEUDOCODE,
+  bstLevelOrder,
+} from "./bst-levelorder";
+import { BST_POSTORDER_SOURCES, BST_POSTORDER_PSEUDOCODE, bstPostorder } from "./bst-postorder";
+import { BST_PREORDER_SOURCES, BST_PREORDER_PSEUDOCODE, bstPreorder } from "./bst-preorder";
+import { BST_SEARCH_SOURCES, BST_SEARCH_PSEUDOCODE, bstSearch } from "./bst-search";
 import { BUBBLE_SORT_SOURCES, BUBBLE_SORT_PSEUDOCODE, bubbleSort } from "./bubble-sort";
 import { DFS_SOURCES, DFS_PSEUDOCODE, dfs } from "./dfs";
 import { DIJKSTRA_SOURCES, DIJKSTRA_PSEUDOCODE, dijkstra } from "./dijkstra";
@@ -19,6 +30,7 @@ import {
   SELECTION_SORT_PSEUDOCODE,
   selectionSort,
 } from "./selection-sort";
+import { TREE_SAMPLE_VALUES, TREE_SEARCH_TARGET, TREE_DELETE_TARGET } from "./tree-shared";
 import { SAMPLE_GRAPH, SAMPLE_GRAPH_START } from "@/lib/graph/sample-graph";
 import type { Graph } from "@/lib/graph/types";
 import type { Step } from "@/types/step";
@@ -74,7 +86,24 @@ export type GraphAlgorithmMeta = BaseAlgorithmMeta & {
   run: (graph: Graph, start: string) => Step[];
 };
 
-export type AlgorithmMeta = ArrayAlgorithmMeta | GraphAlgorithmMeta;
+export type TreeAlgorithmMeta = BaseAlgorithmMeta & {
+  kind: "tree";
+  /** Values inserted in order into an initially empty BST to build the
+   * starting tree shown when the page loads - analogous to sampleInput
+   * for array algorithms. BST Insert visualizes building up from empty
+   * using this same sequence; Search/Delete/Traversals build silently
+   * from it first and only visualize their own operation. */
+  sampleValues: number[];
+  /** Only present for Search and Delete - the value being searched for
+   * or removed. Absent for Insert (nothing to target - it inserts every
+   * value in sampleValues) and the four traversals (no target, just
+   * walk the whole tree). Same role as ArrayAlgorithmMeta's
+   * defaultTarget. */
+  defaultTarget?: number;
+  run: (values: number[], target?: number) => Step[];
+};
+
+export type AlgorithmMeta = ArrayAlgorithmMeta | GraphAlgorithmMeta | TreeAlgorithmMeta;
 
 const SAMPLE_INPUT = [8, 3, 5, 4, 7, 6, 1, 2];
 
@@ -438,15 +467,234 @@ export const ALGORITHM_CATALOG: Record<string, AlgorithmMeta> = {
     startNode: SAMPLE_GRAPH_START,
     run: dijkstra,
   },
+  "bst-insert": {
+    kind: "tree",
+    slug: "bst-insert",
+    name: "BST Insert",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Walks down from the root, comparing at each node, to find where a new value belongs.",
+    timeComplexity: { best: "O(log n)", average: "O(log n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "BST Insert walks down from the root, going left whenever the new value is smaller than the current node and right whenever it's larger, until it reaches an empty spot - that's where the new node is attached. Every value inserted this way keeps the tree's core invariant intact: everything in a node's left subtree is smaller, everything in its right subtree is larger.",
+      whenToUse:
+        "Whenever you need a dynamic, ordered collection that supports fast insertion alongside fast search - unlike a sorted array, which needs O(n) shifting to insert into the middle.",
+      pros: [
+        "O(log n) on a reasonably balanced tree - much faster than a sorted array's O(n) insert",
+        "Keeps the tree's inorder traversal sorted at all times, with no separate sort step needed",
+        "Simple recursive definition - a comparison and a recursive call in one direction",
+      ],
+      cons: [
+        "Worst case O(n) if values arrive in sorted (or reverse-sorted) order - the tree degenerates into a straight chain",
+        "No self-balancing here - a real-world tree that needs a worst-case guarantee reaches for AVL or red-black rules instead",
+      ],
+    },
+    complexityComparison:
+      "BST Search walks the exact same comparisons Insert does, just without attaching anything at the end - both share Insert's O(log n) average / O(n) worst case, since both depend entirely on the tree's current shape. BST Delete is the most involved of the three: it has to walk down to find the node like Insert and Search do, but then may need to search again for an inorder successor before it can finish.",
+    sources: BST_INSERT_SOURCES,
+    pseudocode: BST_INSERT_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    run: bstInsert,
+  },
+  "bst-search": {
+    kind: "tree",
+    slug: "bst-search",
+    name: "BST Search",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Walks down from the root, going left or right depending on the comparison, until it finds the target.",
+    timeComplexity: { best: "O(1)", average: "O(log n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "BST Search compares the target against the current node - starting at the root - and moves left if the target is smaller, right if it's larger, or stops if they match. Each step rules out an entire subtree without looking at it, the same halving idea as Binary Search, but by following pointers instead of jumping to a computed midpoint.",
+      whenToUse:
+        "When your data already lives in a BST (built up via Insert) and you need repeated fast lookups without the upkeep of a plain sorted array, where inserting new values is expensive.",
+      pros: [
+        "O(log n) on a reasonably balanced tree",
+        "No preprocessing needed beyond having built the tree via Insert - unlike Binary Search, which needs a sorted array",
+        "Simple iterative or recursive definition, easy to reason about",
+      ],
+      cons: [
+        "Worst case O(n) on a degenerate (chain-shaped) tree - no better than Linear Search",
+        "Needs an existing tree structure - not a fit if your data is just a plain array",
+      ],
+    },
+    complexityComparison:
+      "BST Search is structurally identical to Binary Search's halving idea, but achieved by following node pointers instead of computing a midpoint index - trading Binary Search's guaranteed O(log n) (since a sorted array is always perfectly balanced) for BST Insert's O(log n) average that can degrade to O(n) if the tree itself is unbalanced. BST Delete performs this same walk first, then does extra work once it locates the node.",
+    sources: BST_SEARCH_SOURCES,
+    pseudocode: BST_SEARCH_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    defaultTarget: TREE_SEARCH_TARGET,
+    run: bstSearch,
+  },
+  "bst-delete": {
+    kind: "tree",
+    slug: "bst-delete",
+    name: "BST Delete",
+    category: "Tree",
+    difficulty: "Medium",
+    shortDescription: "Locates a node like Search does, then removes it while keeping the BST shape valid.",
+    timeComplexity: { best: "O(log n)", average: "O(log n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "BST Delete first walks down to locate the target, exactly like Search. What happens next depends on how many children that node has: no children (or only one) means it can simply be removed or replaced by its one child, but two children need a stand-in - the inorder successor (the smallest value in the right subtree) - whose value gets copied into the deleted node before the successor itself is removed from further down the tree.",
+      whenToUse:
+        "Whenever a dynamic ordered collection needs removal as well as insertion and lookup - a plain sorted array needs O(n) shifting to delete from the middle, same as it does to insert.",
+      pros: [
+        "O(log n) on a reasonably balanced tree, matching Insert and Search",
+        "Keeps the BST invariant intact afterward - an inorder traversal is still sorted",
+        "The two-children case (copy the inorder successor, then delete it from where it was) generalizes cleanly to any node shape",
+      ],
+      cons: [
+        "The most involved of the three core operations - three distinct cases to get right, unlike Insert and Search's single walk down",
+        "Worst case O(n) on a degenerate tree, same as Insert and Search",
+        "Repeated deletions can worsen an already-unbalanced tree further, with nothing here to correct it",
+      ],
+    },
+    complexityComparison:
+      "BST Delete starts with the exact same walk as BST Search, so it shares Search's O(log n) average / O(n) worst case for locating the node - the extra cost is the two-children case's second, shorter walk to find the inorder successor. Unlike Insert and Search, which only ever read or attach one node, Delete can restructure multiple parent-child links at once.",
+    sources: BST_DELETE_SOURCES,
+    pseudocode: BST_DELETE_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    defaultTarget: TREE_DELETE_TARGET,
+    run: bstDelete,
+  },
+  "bst-inorder": {
+    kind: "tree",
+    slug: "bst-inorder",
+    name: "Inorder Traversal",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Visits left subtree, then this node, then right subtree - yields values in ascending order.",
+    timeComplexity: { best: "O(n)", average: "O(n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "Inorder Traversal recursively visits a node's left subtree, then the node itself, then its right subtree. Because a BST always keeps smaller values to the left and larger ones to the right, this order visits every value from smallest to largest - it's effectively a free sort of the tree's contents.",
+      whenToUse:
+        "Whenever you need a BST's values in sorted order - for example, printing a sorted report, or as the first step in rebuilding a perfectly balanced tree from an existing one.",
+      pros: [
+        "Produces values in ascending order for any BST, with no extra sorting step",
+        "Visits every node exactly once - O(n), optimal for a full traversal",
+        "Simple three-line recursive definition",
+      ],
+      cons: [
+        "Needs O(h) auxiliary space for the recursion's call stack, which becomes O(n) on a degenerate tree",
+        "Doesn't reveal the tree's shape the way Preorder or Level-order do - two very differently shaped BSTs holding the same values produce the identical inorder sequence",
+      ],
+    },
+    complexityComparison:
+      "All four traversals visit every node exactly once, so they share the same O(n) time - what differs is only the order nodes are visited in and what that order is useful for. Inorder is the one BST-specific case: only it yields sorted order, because of where it places the \"visit this node\" step relative to the left/right recursive calls.",
+    sources: BST_INORDER_SOURCES,
+    pseudocode: BST_INORDER_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    run: bstInorder,
+  },
+  "bst-preorder": {
+    kind: "tree",
+    slug: "bst-preorder",
+    name: "Preorder Traversal",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Visits this node first, then left subtree, then right subtree.",
+    timeComplexity: { best: "O(n)", average: "O(n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "Preorder Traversal visits a node before recursing into either of its children: this node, then its left subtree, then its right subtree. A parent always appears before its children in the resulting sequence, which is exactly what's needed to recreate the tree's shape from scratch.",
+      whenToUse:
+        "When you need to serialize a tree (write it out so it can be rebuilt later) or copy its structure - since parents always come before children, replaying the sequence with Insert reconstructs the same shape.",
+      pros: [
+        "Visits every node exactly once - O(n), optimal for a full traversal",
+        "A node always appears before its children - ideal for copying or serializing tree structure",
+        "Simple three-line recursive definition, just a reordering of Inorder's same three steps",
+      ],
+      cons: [
+        "Doesn't yield sorted order the way Inorder does",
+        "Needs O(h) auxiliary space for the recursion's call stack, which becomes O(n) on a degenerate tree",
+      ],
+    },
+    complexityComparison:
+      "All four traversals visit every node exactly once, so they share the same O(n) time - what differs is only the order nodes are visited in and what that order is useful for. Preorder's defining trait is that a node always precedes its children, unlike Postorder where it's the reverse.",
+    sources: BST_PREORDER_SOURCES,
+    pseudocode: BST_PREORDER_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    run: bstPreorder,
+  },
+  "bst-postorder": {
+    kind: "tree",
+    slug: "bst-postorder",
+    name: "Postorder Traversal",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Visits left subtree, then right subtree, then this node.",
+    timeComplexity: { best: "O(n)", average: "O(n)", worst: "O(n)" },
+    spaceComplexity: "O(h)",
+    overview: {
+      whatItDoes:
+        "Postorder Traversal visits both of a node's children before the node itself: its left subtree, then its right subtree, then the node. A node always appears only after everything beneath it, which is exactly the order needed to safely tear down or free a tree from the bottom up.",
+      whenToUse:
+        "When you need to process or delete a tree's nodes bottom-up - for example, freeing memory in a language without garbage collection, where a parent can't be freed while its children still need visiting.",
+      pros: [
+        "Visits every node exactly once - O(n), optimal for a full traversal",
+        "A node always appears after both its children - the safe order for bottom-up deletion or aggregation (like computing subtree sizes)",
+        "Simple three-line recursive definition, just a reordering of Inorder's same three steps",
+      ],
+      cons: [
+        "Doesn't yield sorted order the way Inorder does",
+        "Needs O(h) auxiliary space for the recursion's call stack, which becomes O(n) on a degenerate tree",
+      ],
+    },
+    complexityComparison:
+      "All four traversals visit every node exactly once, so they share the same O(n) time - what differs is only the order nodes are visited in and what that order is useful for. Postorder's defining trait is that a node always follows its children, the mirror image of Preorder.",
+    sources: BST_POSTORDER_SOURCES,
+    pseudocode: BST_POSTORDER_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    run: bstPostorder,
+  },
+  "bst-levelorder": {
+    kind: "tree",
+    slug: "bst-levelorder",
+    name: "Level-order Traversal",
+    category: "Tree",
+    difficulty: "Easy",
+    shortDescription: "Visits the root, then every node one level deeper, using a queue instead of recursion.",
+    timeComplexity: { best: "O(n)", average: "O(n)", worst: "O(n)" },
+    spaceComplexity: "O(w)",
+    overview: {
+      whatItDoes:
+        "Level-order Traversal visits the root, then both its children, then all four grandchildren, and so on - breadth-first, one depth at a time. It uses an explicit queue rather than recursion: dequeue a node, visit it, enqueue its children, repeat, exactly the same shape as the Graph category's BFS.",
+      whenToUse:
+        "Whenever you need to process a tree level by level - for example, printing it row by row, or finding the shortest number of parent-child hops between two nodes.",
+      pros: [
+        "Visits every node exactly once - O(n), optimal for a full traversal",
+        "The only traversal here that reveals the tree's shape level by level, rather than diving deep first",
+        "No recursion needed - an explicit queue avoids any call-stack depth concerns entirely",
+      ],
+      cons: [
+        "Needs O(w) auxiliary space for the queue, where w is the widest level - can be much more than the O(h) the other three traversals use on a wide, shallow tree",
+        "Doesn't yield sorted order the way Inorder does",
+      ],
+    },
+    complexityComparison:
+      "All four traversals visit every node exactly once, so they share the same O(n) time - what differs is only the order nodes are visited in and what that order is useful for. Level-order is the odd one out structurally: Inorder, Preorder, and Postorder all recurse and pay for it in call-stack space, while Level-order trades that for an explicit queue - the same recursion-vs-queue tradeoff as DFS vs BFS on a graph.",
+    sources: BST_LEVELORDER_SOURCES,
+    pseudocode: BST_LEVELORDER_PSEUDOCODE,
+    sampleValues: TREE_SAMPLE_VALUES,
+    run: bstLevelOrder,
+  },
 };
 
 export function getAlgorithm(slug: string): AlgorithmMeta | undefined {
   return ALGORITHM_CATALOG[slug];
 }
 
-/** Homepage category order. Tree stays "coming soon" for the whole MVP;
- * Graph has BFS/DFS/Dijkstra, Searching has Linear/Binary/Jump Search. */
-export const CATEGORY_ORDER: Category[] = ["Sorting", "Graph", "Tree", "Searching"];
+/** Homepage category order. */
+export const CATEGORY_ORDER: Category[] = ["Sorting", "Searching", "Graph", "Tree"];
 
 export function getAllAlgorithms(): AlgorithmMeta[] {
   return Object.values(ALGORITHM_CATALOG);
@@ -475,17 +723,22 @@ export function runAlgorithmWithInput(
   input: number[] | Graph,
   target?: number
 ): Step[] {
-  return algorithm.kind === "array"
-    ? algorithm.run(input as number[], target)
-    : algorithm.run(input as Graph, (input as Graph).nodes[0]?.id ?? algorithm.startNode);
+  if (algorithm.kind === "graph") {
+    return algorithm.run(input as Graph, (input as Graph).nodes[0]?.id ?? algorithm.startNode);
+  }
+  return algorithm.run(input as number[], target);
 }
 
 /** Runs an algorithm against its own sample input (and default target,
- * for search algorithms). */
+ * for search algorithms and Tree Search/Delete). */
 export function runAlgorithm(algorithm: AlgorithmMeta): Step[] {
   return runAlgorithmWithInput(
     algorithm,
-    algorithm.kind === "array" ? algorithm.sampleInput : algorithm.graph,
-    algorithm.kind === "array" ? algorithm.defaultTarget : undefined
+    algorithm.kind === "array"
+      ? algorithm.sampleInput
+      : algorithm.kind === "tree"
+        ? algorithm.sampleValues
+        : algorithm.graph,
+    algorithm.kind === "array" || algorithm.kind === "tree" ? algorithm.defaultTarget : undefined
   );
 }

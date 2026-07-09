@@ -8,6 +8,7 @@ import {
   computeMaxCallStackDepth,
   computeMaxPointerStack,
 } from "@/lib/visualizer/layout-stability";
+import { cn } from "@/lib/utils";
 import type { Step } from "@/types/step";
 import { ArrayInputControls } from "./array-input-controls";
 import { CodeTab } from "./code-tab";
@@ -59,19 +60,35 @@ export function VisualizationTab({
     [steps, arrayLength]
   );
   const maxCallStackDepth = useMemo(() => computeMaxCallStackDepth(steps), [steps]);
+  // Merge/Quick Sort recurse and populate a call stack; every other
+  // array algorithm here (the simple sorts, Linear/Binary/Jump Search)
+  // never does, so there's nothing to show in a 3rd column - collapse
+  // back to 2 columns and let pseudocode take the freed width instead
+  // of reserving empty space.
+  const hasAuxPanel = maxCallStackDepth > 0;
 
   return (
     // Visual + controls stay adjacent in their own column so play/step/
-    // reset never require scrolling away from what's on screen. The
-    // pseudocode column carries the explanation and auxiliary panels
-    // right underneath it, rather than a separate full-width row.
-    // grid-cols-1 (not just lg:grid-cols-2) matters here even though it's
-    // the layout's only column below lg - Tailwind's numbered grid-cols
-    // utilities set minmax(0, 1fr), which lets a child's own
-    // overflow-x-auto (the code panel's long lines) actually engage.
-    // Without it the browser's default single-column `auto` track sizes
-    // to fit that content unwrapped, and the whole page overflows instead.
-    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+    // reset never require scrolling away from what's on screen. Pseudocode
+    // and the call stack are separate columns (not stacked) so the stack
+    // is visible on screen at the same time as the code driving it,
+    // without scrolling. grid-cols-1 (not just lg:grid-cols-N) matters
+    // here even though it's the layout's only column below lg -
+    // Tailwind's numbered grid-cols utilities set minmax(0, 1fr), which
+    // lets a child's own overflow-x-auto (the code panel's long lines)
+    // actually engage. Without it the browser's default single-column
+    // `auto` track sizes to fit that content unwrapped, and the whole
+    // page overflows instead.
+    <div
+      className={cn(
+        "grid grid-cols-1 items-start gap-6",
+        // Explicit fr tracks (not grid-cols-N + col-span) so the call
+        // stack can take a smaller share (0.85fr) than visualization and
+        // pseudocode's even 2fr/2fr split - col-span-based ratios can
+        // only express whole-number proportions.
+        hasAuxPanel ? "lg:grid-cols-[2fr_2fr_0.85fr]" : "lg:grid-cols-[2fr_1fr]"
+      )}
+    >
       <div className="flex flex-col gap-4">
         <ArrayBars step={currentStep} maxPointerRows={maxPointerRows} />
         <StateLegend variant={legendVariant} />
@@ -125,12 +142,16 @@ export function VisualizationTab({
             Step {currentIndex + 1} of {totalSteps} · line {currentStep.lineOfCode}
           </p>
         </div>
-
-        <CallStackPanel
-          callStack={currentStep.dataStructureState?.callStack ?? []}
-          maxDepth={maxCallStackDepth}
-        />
       </div>
+
+      {hasAuxPanel && (
+        <div className="flex flex-col gap-4">
+          <CallStackPanel
+            callStack={currentStep.dataStructureState?.callStack ?? []}
+            maxDepth={maxCallStackDepth}
+          />
+        </div>
+      )}
     </div>
   );
 }

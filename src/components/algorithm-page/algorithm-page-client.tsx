@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { treeLegendVariant } from "@/components/visualizer/tree-state-legend";
 import { usePlayback } from "@/hooks/use-playback";
 import { getAlgorithm, runAlgorithmWithInput } from "@/lib/algorithms/catalog";
 import type { Language } from "@/lib/algorithms/languages";
@@ -11,6 +12,7 @@ import { ComplexityTab } from "./complexity-tab";
 import { GraphVisualizationTab } from "./graph-visualization-tab";
 import { OverviewTab } from "./overview-tab";
 import { PracticeTab } from "./practice-tab";
+import { TreeVisualizationTab } from "./tree-visualization-tab";
 import { VisualizationTab } from "./visualization-tab";
 
 /**
@@ -46,16 +48,25 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
   const activeArrayInput =
     algorithm.kind === "array" ? (customInput ?? algorithm.sampleInput) : null;
   const activeGraph = algorithm.kind === "graph" ? (customGraph ?? algorithm.graph) : null;
+  // Tree's "values" (the insert sequence that builds the starting tree)
+  // is the same number[] shape as an array algorithm's input, so it
+  // reuses the same customInput state slot rather than a parallel one -
+  // an algorithm is never both kinds at once, so there's no collision.
+  const activeValues = algorithm.kind === "tree" ? (customInput ?? algorithm.sampleValues) : null;
   const activeTarget =
-    algorithm.kind === "array" ? (customTarget ?? algorithm.defaultTarget) : undefined;
+    algorithm.kind === "array" || algorithm.kind === "tree"
+      ? (customTarget ?? algorithm.defaultTarget)
+      : undefined;
 
   const steps = useMemo(() => {
-    return runAlgorithmWithInput(
-      algorithm,
-      algorithm.kind === "array" ? activeArrayInput! : activeGraph!,
-      activeTarget
-    );
-  }, [algorithm, activeArrayInput, activeGraph, activeTarget]);
+    const input =
+      algorithm.kind === "array"
+        ? activeArrayInput!
+        : algorithm.kind === "tree"
+          ? activeValues!
+          : activeGraph!;
+    return runAlgorithmWithInput(algorithm, input, activeTarget);
+  }, [algorithm, activeArrayInput, activeValues, activeGraph, activeTarget]);
 
   const playback = usePlayback(steps);
 
@@ -84,6 +95,18 @@ export function AlgorithmPageClient({ slug }: { slug: string }) {
             onArrayInputChange={setCustomInput}
             resetKey={slug}
             legendVariant={algorithm.category === "Searching" ? "searching" : "sorting"}
+            target={activeTarget}
+            onTargetChange={setCustomTarget}
+          />
+        ) : algorithm.kind === "tree" ? (
+          <TreeVisualizationTab
+            playback={playback}
+            pseudocode={algorithm.pseudocode}
+            steps={steps}
+            values={activeValues!}
+            onValuesChange={setCustomInput}
+            resetKey={slug}
+            legendVariant={treeLegendVariant(slug)}
             target={activeTarget}
             onTargetChange={setCustomTarget}
           />

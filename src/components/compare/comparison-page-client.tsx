@@ -13,7 +13,7 @@ import {
   runAlgorithmWithInput,
 } from "@/lib/algorithms/catalog";
 import type { Graph } from "@/lib/graph/types";
-import { computeMaxPointerStack } from "@/lib/visualizer/layout-stability";
+import { computeMaxPointerStack, computeMaxTreeExtent } from "@/lib/visualizer/layout-stability";
 import { AlgorithmSelect } from "./algorithm-select";
 import { ComparisonSideInfo, ComparisonSideStats } from "./comparison-side";
 
@@ -93,9 +93,21 @@ export function ComparisonPageClient() {
   const activeArrayInput =
     algorithmA.kind === "array" ? (customArray ?? algorithmA.sampleInput) : null;
   const activeGraph = algorithmA.kind === "graph" ? (customGraph ?? algorithmA.graph) : null;
-  const activeInput = algorithmA.kind === "array" ? activeArrayInput! : activeGraph!;
+  // Tree's "values" (the insert sequence that builds the starting tree)
+  // is the same number[] shape as an array algorithm's input, so it
+  // reuses the same customArray state slot rather than a parallel one -
+  // an algorithm is never both kinds at once, so there's no collision.
+  const activeValues = algorithmA.kind === "tree" ? (customArray ?? algorithmA.sampleValues) : null;
+  const activeInput =
+    algorithmA.kind === "array"
+      ? activeArrayInput!
+      : algorithmA.kind === "tree"
+        ? activeValues!
+        : activeGraph!;
   const activeTarget =
-    algorithmA.kind === "array" ? (customTarget ?? algorithmA.defaultTarget) : undefined;
+    algorithmA.kind === "array" || algorithmA.kind === "tree"
+      ? (customTarget ?? algorithmA.defaultTarget)
+      : undefined;
 
   const { steps: stepsA, computeTimeMs: computeTimeMsA } = useTimedRun(
     algorithmA,
@@ -126,6 +138,15 @@ export function ComparisonPageClient() {
     return Math.max(a, b);
   }, [algorithmA.kind, algorithmB.kind, stepsA, stepsB]);
 
+  // Same sharing reasoning as maxPointerRows, for Tree's canvas size -
+  // both sides always run on the same tree shape here (shared input),
+  // but reserving across both steps arrays keeps it consistent with how
+  // every other shared-layout value in this file is computed.
+  const reservedTree = useMemo(() => {
+    if (algorithmA.kind !== "tree") return { width: 0, height: 0 };
+    return computeMaxTreeExtent([...stepsA, ...stepsB]);
+  }, [algorithmA.kind, stepsA, stepsB]);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
@@ -144,31 +165,33 @@ export function ComparisonPageClient() {
         />
       </div>
 
-      {/* One shared input control for both sides - conditionally array or
-          graph shaped based on the selected kind. Different component
-          types in this slot already remount cleanly on kind switches.
-          Keyed by category too: Sorting and Searching are both "array"
-          kind but ship different default sample data, so without a key
-          here the text field would keep echoing a stale category's
+      {/* One shared input control for both sides - conditionally array,
+          tree, or graph shaped based on the selected kind. Different
+          component types in this slot already remount cleanly on kind
+          switches. Keyed by category too: Sorting and Searching are both
+          "array" kind but ship different default sample data, so without
+          a key here the text field would keep echoing a stale category's
           array after switching (the actual run already uses the right
           one - customArray/activeArrayInput were never wrong - only the
           displayed text was stale). Within the same category (e.g.
           Merge Sort -> Quick Sort) no remount happens, so a custom array
-          the user typed still carries over. */}
-      {algorithmA.kind === "array" ? (
+          the user typed still carries over. Tree reuses ArrayInputControls
+          too - "values" (the insert sequence) is the same number[] shape,
+          it just means something different downstream. */}
+      {algorithmA.kind === "graph" ? (
+        <GraphInputControls initialValue={activeGraph!} onChange={setCustomGraph} />
+      ) : (
         <ArrayInputControls
           key={algorithmA.category}
-          initialValue={activeArrayInput!}
+          initialValue={activeArrayInput ?? activeValues!}
           onChange={setCustomArray}
         />
-      ) : (
-        <GraphInputControls initialValue={activeGraph!} onChange={setCustomGraph} />
       )}
       {activeTarget !== undefined && (
         <TargetInputControls
           key={`${algorithmA.category}-target`}
           initialValue={activeTarget}
-          arrayValues={activeArrayInput ?? []}
+          arrayValues={activeArrayInput ?? activeValues ?? []}
           onChange={setCustomTarget}
         />
       )}
@@ -205,6 +228,8 @@ export function ComparisonPageClient() {
             currentIndex={playback.indexA}
             totalSteps={stepsA.length}
             maxPointerRows={maxPointerRows}
+            reservedTreeWidth={reservedTree.width}
+            reservedTreeHeight={reservedTree.height}
           />
         </div>
         <div className="lg:col-start-2 lg:row-start-1">
@@ -215,6 +240,8 @@ export function ComparisonPageClient() {
             currentIndex={playback.indexB}
             totalSteps={stepsB.length}
             maxPointerRows={maxPointerRows}
+            reservedTreeWidth={reservedTree.width}
+            reservedTreeHeight={reservedTree.height}
           />
         </div>
         <div className="lg:col-start-1 lg:row-start-2">

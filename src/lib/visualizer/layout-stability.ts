@@ -1,3 +1,4 @@
+import { layoutTree } from "@/lib/tree/layout";
 import type { Step } from "@/types/step";
 
 /**
@@ -52,4 +53,21 @@ export function computeMaxLinearItems(
     if (length > max) max = length;
   }
   return max;
+}
+
+/** Largest tree layout extent (in layout units, see lib/tree/layout.ts)
+ * across every step - Insert grows a tree and Delete shrinks one, so
+ * without this TreeView's canvas would resize every step, and small
+ * intermediate trees would get rescaled to fill whatever box that
+ * step's viewBox happened to produce instead of sitting appropriately
+ * small within a canvas sized for the run's largest tree. */
+export function computeMaxTreeExtent(steps: Step[]): { width: number; height: number } {
+  let width = 0;
+  let height = 0;
+  for (const step of steps) {
+    const layout = layoutTree(step.dataStructureState?.tree ?? null);
+    if (layout.width > width) width = layout.width;
+    if (layout.height > height) height = layout.height;
+  }
+  return { width, height };
 }
