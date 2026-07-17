@@ -1,42 +1,43 @@
 # DSA Visualiser
 
-A web app I'm building to make learning Data Structures and Algorithms less about staring at code and more about actually watching it happen.
+A web app for learning Data Structures and Algorithms by watching them run, one step at a time, instead of staring at a wall of code or just a final answer.
 
-Most DSA resources either show you the final output of an algorithm or dump a wall of code on you and expect you to trace through it in your head. I wanted something in between — a way to step through an algorithm one move at a time and actually see what's happening to the array, the stack, the queue, whatever, at each point.
+Most DSA resources either show you the final output of an algorithm or dump code on you and expect you to trace through it in your head. This sits in between: pick an algorithm, and step through exactly what happens to the array, the tree, the call stack, the queue — whatever that algorithm actually touches — one move at a time.
 
 ## What it does
 
-You pick an algorithm, and instead of just running it, you get:
+Every algorithm page gives you:
 
-- A step-by-step visualization you can play, pause, and step through manually
-- The actual code, with the current line highlighted as it runs
-- A plain-English explanation of what's happening at each step
-- Time and space complexity, with a quick comparison to similar algorithms
-- A comparison mode to run two algorithms side by side on the same input (e.g. Merge Sort vs Quick Sort) and see how their comparisons, swaps, and runtime stack up against each other
+- **A step-by-step visualization** you can play, pause, step forward/backward through, reset, and speed up or slow down
+- **Real code** in Java, C++, and Python, with the line driving the current step highlighted as you move through it
+- **A plain-English description** of what's happening at each step
+- **Time and space complexity**, plus a written comparison to related algorithms in the same category
+- **Editable input** — type your own array/tree values or graph edges, or randomize them, and re-run the algorithm on the spot
+- **Comparison Mode** — run two algorithms from the same category side by side on identical input and watch their comparisons, swaps, recursive calls, and compute time stack up against each other live
 
-Right now the algorithms covered are:
+### Algorithms covered
 
-- Merge Sort
-- Quick Sort
-- Bubble Sort
-- Insertion Sort
-- Selection Sort
-- BFS
-- DFS
-- Dijkstra's Algorithm
+**Sorting** — Merge Sort, Quick Sort, Bubble Sort, Selection Sort, Insertion Sort
 
-Tree and Searching algorithms are on the homepage as "coming soon" — didn't want to spread this too thin before the core visualizer was solid.
+**Searching** — Linear Search, Binary Search, Jump Search
 
-## Why I built it this way
+**Graph** — Breadth-First Search, Depth-First Search, Dijkstra's Algorithm
 
-Every algorithm run produces a list of "steps" (array state, pointers, what's being compared, call stack, etc.), and the visualizer just renders whatever's in that list. This meant I could build the visualizer once and reuse it for sorting and graph algorithms instead of writing a separate UI for each one.
+**Tree** — Binary Search Trees (Insert, Search, Delete, and all four traversals — Inorder, Preorder, Postorder, Level-order) and AVL Trees (self-balancing Insert and Delete, with rotations visualized as their own steps and a live balance-factor badge on every node)
+
+That's 20 algorithms across 4 categories. A Practice tab exists on every algorithm page but isn't built out yet — it's a placeholder for future hands-on exercises.
+
+## Why it's built this way
+
+Every algorithm implementation is instrumented to produce a flat list of "steps" — array state, pointers, what's being compared, the call stack, a tree snapshot, whatever's relevant — and the visualizer components only ever render whatever's in that list. They have zero algorithm-specific logic. That's what let sorting, graph, and tree algorithms all reuse the same playback controls, code panel, and stats machinery instead of each needing a bespoke UI. See `ARCHITECTURE.md` for the full breakdown of how that's put together.
 
 ## Tech stack
 
-- Next.js (App Router)
-- TypeScript
-- Tailwind CSS
-- shadcn/ui (built on Radix)
+- **Next.js** (App Router, static export) — deployed to GitHub Pages, no server
+- **TypeScript**
+- **React 19**
+- **Tailwind CSS v4**
+- **shadcn/ui** on **Radix UI**
 
 ## Running it locally
 
@@ -47,6 +48,14 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
+To produce the same static build the site deploys from:
+
+```bash
+npm run build
+```
+
+Output goes to `out/`.
+
 ## Status
 
-Still a work in progress — building it out algorithm by algorithm rather than trying to do everything at once. Practice quizzes and more algorithms are on the list for later.
+The core visualizer, all four algorithm categories (Sorting, Searching, Graph, Tree), and Comparison Mode are built and working. The Practice tab is still a placeholder. For the technical design behind all of this, see `ARCHITECTURE.md`.
